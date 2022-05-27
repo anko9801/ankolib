@@ -7,6 +7,69 @@ pub struct FormalPowerSeries {
 }
 type FPS = FormalPowerSeries;
 
+impl FPS {
+    // コンストラクタ
+    pub fn term(coeff: isize, power: usize) -> FPS {
+        match (coeff, power) {
+            (0, _) => FPS::from(vec![]),
+            (_, 0) => FPS::from(vec![coeff]),
+            (_, _) => {
+                let mut poly = Vec::with_capacity(power);
+                for i in 0..power {
+                    poly.push(0);
+                }
+                poly.push(coeff);
+                FPS::from(poly)
+            }
+        }
+    }
+
+    // 不定元 (indeterminate)
+    #[inline]
+    pub fn x() -> FPS {
+        FPS::term(1, 1)
+    }
+
+    // 多項式の係数 (昇冪)
+    #[inline]
+    pub fn coeff(&self) -> Vec<isize> {
+        self.terms.clone()
+    }
+
+    // 次数
+    #[inline]
+    pub fn degree(&self) -> usize {
+        self.terms.len()
+    }
+
+    // 最高次の係数
+    pub fn leading_coefficient(&self) -> isize {
+        match self.degree() {
+            0 => 0,
+            _ => self[self.degree() - 1],
+        }
+    }
+
+    // モニック多項式
+    pub fn monic(&mut self) -> Result<FPS, &str> {
+        todo!();
+    }
+
+    // 代入
+    pub fn dubs(&self, x: isize) -> isize {
+        todo!();
+    }
+
+    fn reduction(&mut self) {
+        for i in (0..self.degree()).rev() {
+            if self[i] != 0 {
+                self.terms = self[..=i].to_vec();
+                return;
+            }
+        }
+    }
+}
+
 impl ops::AddAssign for FPS {
     fn add_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
@@ -135,9 +198,8 @@ impl ops::MulAssign for FPS {
 }
 
 impl ops::Div for FPS {
-    type Output = FPS;
-
-    fn div(self, other: Self) -> FPS {
+    type Output = Self;
+    fn div(self, other: Self) -> Self {
         let mut tmp = self.clone();
         tmp /= other;
         tmp
@@ -145,9 +207,8 @@ impl ops::Div for FPS {
 }
 
 impl ops::Rem for FPS {
-    type Output = FPS;
-
-    fn rem(self, other: Self) -> FPS {
+    type Output = Self;
+    fn rem(self, other: Self) -> Self {
         let mut tmp = self.clone();
         tmp %= other;
         tmp
@@ -169,69 +230,6 @@ impl FPS {
     }
 
     pub fn diff(&self) {}
-}
-
-impl FPS {
-    // コンストラクタ
-    pub fn term(coeff: isize, power: usize) -> FPS {
-        match (coeff, power) {
-            (0, _) => FPS::from(vec![]),
-            (_, 0) => FPS::from(vec![coeff]),
-            (_, _) => {
-                let mut poly = Vec::with_capacity(power);
-                for i in 0..power {
-                    poly.push(0);
-                }
-                poly.push(coeff);
-                FPS::from(poly)
-            }
-        }
-    }
-
-    // 不定元 (indeterminate)
-    #[inline]
-    pub fn x() -> FPS {
-        FPS::term(1, 1)
-    }
-
-    // 多項式の係数 (昇冪)
-    #[inline]
-    pub fn coeff(&self) -> Vec<isize> {
-        self.terms.clone()
-    }
-
-    // 次数
-    #[inline]
-    pub fn degree(&self) -> usize {
-        self.terms.len()
-    }
-
-    // 最高次の係数
-    pub fn leading_coefficient(&self) -> isize {
-        match self.degree() {
-            0 => 0,
-            _ => self[self.degree() - 1],
-        }
-    }
-
-    // モニック多項式
-    pub fn monic(&mut self) -> Result<FPS, &str> {
-        todo!();
-    }
-
-    // 代入
-    pub fn dubs(&self, x: isize) -> isize {
-        todo!();
-    }
-
-    fn reduction(&mut self) {
-        for i in (0..self.degree()).rev() {
-            if self[i] != 0 {
-                self.terms = self[..=i].to_vec();
-                return;
-            }
-        }
-    }
 }
 
 impl fmt::Display for FPS {
