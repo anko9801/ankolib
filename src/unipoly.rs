@@ -37,28 +37,22 @@ impl fmt::Display for FPS {
     }
 }
 
-impl From<isize> for FPS {
-    fn from(num: isize) -> Self {
-        match num {
-            0 => FPS { terms: vec![] },
-            _ => FPS { terms: vec![num] },
-        }
+// 係数
+impl From<Vec<isize>> for FPS {
+    fn from(coeff: Vec<isize>) -> Self {
+        let mut poly = Self { terms: coeff };
+        poly.reduction();
+        poly
     }
 }
 
 impl ops::AddAssign for FPS {
     fn add_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
-            self.terms.extend(&other.terms[self.degree()..]);
+            self.terms.resize(other.degree(), 0);
         }
-        if self.degree() > other.degree() {
-            for i in 0..other.degree() {
-                self.terms[i] += other.terms[i];
-            }
-        } else {
-            for i in 0..self.degree() {
-                self.terms[i] += other.terms[i];
-            }
+        for i in 0..other.degree() {
+            self.terms[i] += other.terms[i];
         }
     }
 }
@@ -114,7 +108,7 @@ impl ops::Mul for FPS {
                 coeff[k] += self.terms[i] * other.terms[j];
             }
         }
-        FPS::from_coeff(coeff)
+        FPS::from(coeff)
     }
 }
 
@@ -122,7 +116,7 @@ impl ops::DivAssign for FPS {
     fn div_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
         if deg < 0 {
-            *self = FPS::integer(0);
+            *self = FPS::term(0, 0);
             return;
         }
 
@@ -133,10 +127,10 @@ impl ops::DivAssign for FPS {
         }
 
         let mut tmp = self.clone();
-        *self = FPS::integer(0);
+        *self = FPS::term(0, 0);
         for i in (0..deg).rev() {
-            *self += FPS::integer(tmp.leading_coefficient()) * (FPS::x() ^ i);
-            tmp -= FPS::integer(tmp.leading_coefficient()) * (FPS::x() ^ i) * other.clone();
+            *self += FPS::term(tmp.leading_coefficient(), i);
+            tmp -= FPS::term(tmp.leading_coefficient(), i) * other.clone();
         }
     }
 }
@@ -154,7 +148,7 @@ impl ops::RemAssign for FPS {
     fn rem_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
         if deg < 0 {
-            *self = FPS::integer(0);
+            *self = FPS::term(0, 0);
             return;
         }
 
@@ -165,7 +159,7 @@ impl ops::RemAssign for FPS {
         }
 
         for i in (0..deg).rev() {
-            *self -= FPS::integer(self.leading_coefficient()) * (FPS::x() ^ i) * other.clone();
+            *self -= FPS::term(self.leading_coefficient(), i) * other.clone();
         }
     }
 }
@@ -185,7 +179,7 @@ impl ops::BitXorAssign<usize> for FPS {
         // self.terms.resize(size, 0);
         let mut tmp = self.clone();
         let mut bin = 1;
-        let mut ans = FPS::integer(1);
+        let mut ans = FPS::term(1, 0);
         while bin <= other {
             if bin & other > 0 {
                 ans *= tmp.clone();
@@ -210,6 +204,8 @@ impl FPS {
     pub fn gcd(&self, other: Self) -> Self {
         todo!();
     }
+
+    pub fn diff(&self) {}
 }
 
 impl FPS {
@@ -218,30 +214,25 @@ impl FPS {
         Self { terms: vec![0, 1] }
     }
 
-    // 整数 (from)
-    pub fn integer(num: isize) -> FPS {
-        FPS::from(num)
+    // コンストラクタ
+    pub fn term(coeff: isize, power: usize) -> FPS {
+        match (coeff, power) {
+            (0, _) => FPS::from(vec![]),
+            (_, 0) => FPS::from(vec![coeff]),
+            (_, _) => {
+                let mut poly = Vec::with_capacity(power);
+                for i in 0..power {
+                    poly.push(0);
+                }
+                poly.push(coeff);
+                FPS::from(poly)
+            }
+        }
     }
 
     // 多項式の係数 (昇冪)
     pub fn coeff(&self) -> Vec<isize> {
         self.terms.clone()
-    }
-
-    // 係数
-    pub fn from_coeff(coeff: Vec<isize>) -> FPS {
-        let mut poly = Self { terms: coeff };
-        poly.reduction();
-        poly
-    }
-
-    fn reduction(&mut self) {
-        for i in (0..self.degree()).rev() {
-            if self.terms[i] != 0 {
-                self.terms = self.terms[..=i].to_vec();
-                return;
-            }
-        }
     }
 
     // 次数
@@ -265,5 +256,14 @@ impl FPS {
     // 代入
     pub fn dubs(&self, x: isize) -> isize {
         todo!();
+    }
+
+    fn reduction(&mut self) {
+        for i in (0..self.degree()).rev() {
+            if self.terms[i] != 0 {
+                self.terms = self.terms[..=i].to_vec();
+                return;
+            }
+        }
     }
 }

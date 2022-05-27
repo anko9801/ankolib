@@ -22,8 +22,6 @@ fn main() {
     // println!("{}", 30.lcm(-18));
     // println!("{:?}", 735134400_u64.factors().collect::<Vec<_>>());
     // println!("{}", 30_u32.carmichael_lambda());
-    let f: FPS = FPS::from(5) * (FPS::x() ^ 3)
-        + (((FPS::x() ^ 3) + FPS::from(3)) ^ 2)
-        + FPS::from(3) * FPS::x();
+    let f: FPS = FPS::term(5, 3) + ((FPS::term(1, 3) + FPS::term(3, 0)) ^ 2) + FPS::term(3, 1);
     println!("{}", f);
 }
