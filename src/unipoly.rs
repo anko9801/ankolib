@@ -7,70 +7,6 @@ pub struct FormalPowerSeries {
 }
 type FPS = FormalPowerSeries;
 
-impl fmt::Display for FPS {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for i in (0..self.degree()).rev() {
-            if i != self.degree() - 1 && self.terms[i] != 0 {
-                write!(f, " + ");
-            }
-
-            match (self.terms[i], i) {
-                (0, _) => (),
-                (_, 0) => {
-                    write!(f, "{}", self.terms[i]);
-                }
-                (1, 1) => {
-                    write!(f, "x");
-                }
-                (1, _) => {
-                    write!(f, "x^{}", i);
-                }
-                (_, 1) => {
-                    write!(f, "{}x", self.terms[i]);
-                }
-                _ => {
-                    write!(f, "{}x^{}", self.terms[i], i);
-                }
-            }
-        }
-        write!(f, "")
-    }
-}
-
-// 係数
-impl From<Vec<isize>> for FPS {
-    fn from(coeff: Vec<isize>) -> Self {
-        let mut poly = Self { terms: coeff };
-        poly.reduction();
-        poly
-    }
-}
-
-impl ops::Index<usize> for FPS {
-    type Output = isize;
-
-    #[inline]
-    fn index(&self, index: usize) -> &isize {
-        &self.terms[index]
-    }
-}
-
-impl ops::Index<ops::RangeToInclusive<usize>> for FPS {
-    type Output = [isize];
-
-    #[inline]
-    fn index(&self, index: ops::RangeToInclusive<usize>) -> &[isize] {
-        &self.terms[index]
-    }
-}
-
-impl ops::IndexMut<usize> for FPS {
-    #[inline]
-    fn index_mut(&mut self, index: usize) -> &mut isize {
-        &mut self.terms[index]
-    }
-}
-
 impl ops::AddAssign for FPS {
     fn add_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
@@ -82,15 +18,6 @@ impl ops::AddAssign for FPS {
     }
 }
 
-impl ops::Add for FPS {
-    type Output = Self;
-    fn add(self, other: Self) -> Self {
-        let mut tmp = self.clone();
-        tmp += other;
-        tmp
-    }
-}
-
 impl ops::SubAssign for FPS {
     fn sub_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
@@ -99,21 +26,6 @@ impl ops::SubAssign for FPS {
         for i in 0..other.degree() {
             self[i] -= other[i];
         }
-    }
-}
-
-impl ops::Sub for FPS {
-    type Output = Self;
-    fn sub(self, other: Self) -> Self {
-        let mut tmp = self.clone();
-        tmp -= other;
-        tmp
-    }
-}
-
-impl ops::MulAssign for FPS {
-    fn mul_assign(&mut self, other: Self) {
-        *self = self.clone() * other;
     }
 }
 
@@ -160,16 +72,6 @@ impl ops::DivAssign for FPS {
     }
 }
 
-impl ops::Div for FPS {
-    type Output = FPS;
-
-    fn div(self, other: Self) -> FPS {
-        let mut tmp = self.clone();
-        tmp /= other;
-        tmp
-    }
-}
-
 impl ops::RemAssign for FPS {
     fn rem_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
@@ -190,16 +92,6 @@ impl ops::RemAssign for FPS {
     }
 }
 
-impl ops::Rem for FPS {
-    type Output = FPS;
-
-    fn rem(self, other: Self) -> FPS {
-        let mut tmp = self.clone();
-        tmp %= other;
-        tmp
-    }
-}
-
 impl ops::BitXorAssign<usize> for FPS {
     fn bitxor_assign(&mut self, other: usize) {
         // let size = self.degree() * other;
@@ -215,6 +107,50 @@ impl ops::BitXorAssign<usize> for FPS {
             bin <<= 1;
         }
         *self = ans;
+    }
+}
+
+impl ops::Add for FPS {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        let mut tmp = self.clone();
+        tmp += other;
+        tmp
+    }
+}
+
+impl ops::Sub for FPS {
+    type Output = Self;
+    fn sub(self, other: Self) -> Self {
+        let mut tmp = self.clone();
+        tmp -= other;
+        tmp
+    }
+}
+
+impl ops::MulAssign for FPS {
+    fn mul_assign(&mut self, other: Self) {
+        *self = self.clone() * other;
+    }
+}
+
+impl ops::Div for FPS {
+    type Output = FPS;
+
+    fn div(self, other: Self) -> FPS {
+        let mut tmp = self.clone();
+        tmp /= other;
+        tmp
+    }
+}
+
+impl ops::Rem for FPS {
+    type Output = FPS;
+
+    fn rem(self, other: Self) -> FPS {
+        let mut tmp = self.clone();
+        tmp %= other;
+        tmp
     }
 }
 
@@ -295,5 +231,69 @@ impl FPS {
                 return;
             }
         }
+    }
+}
+
+impl fmt::Display for FPS {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for i in (0..self.degree()).rev() {
+            if i != self.degree() - 1 && self.terms[i] != 0 {
+                write!(f, " + ");
+            }
+
+            match (self.terms[i], i) {
+                (0, _) => (),
+                (_, 0) => {
+                    write!(f, "{}", self.terms[i]);
+                }
+                (1, 1) => {
+                    write!(f, "x");
+                }
+                (1, _) => {
+                    write!(f, "x^{}", i);
+                }
+                (_, 1) => {
+                    write!(f, "{}x", self.terms[i]);
+                }
+                _ => {
+                    write!(f, "{}x^{}", self.terms[i], i);
+                }
+            }
+        }
+        write!(f, "")
+    }
+}
+
+// 係数
+impl From<Vec<isize>> for FPS {
+    fn from(coeff: Vec<isize>) -> Self {
+        let mut poly = Self { terms: coeff };
+        poly.reduction();
+        poly
+    }
+}
+
+impl ops::Index<usize> for FPS {
+    type Output = isize;
+
+    #[inline]
+    fn index(&self, index: usize) -> &isize {
+        &self.terms[index]
+    }
+}
+
+impl ops::Index<ops::RangeToInclusive<usize>> for FPS {
+    type Output = [isize];
+
+    #[inline]
+    fn index(&self, index: ops::RangeToInclusive<usize>) -> &[isize] {
+        &self.terms[index]
+    }
+}
+
+impl ops::IndexMut<usize> for FPS {
+    #[inline]
+    fn index_mut(&mut self, index: usize) -> &mut isize {
+        &mut self.terms[index]
     }
 }
