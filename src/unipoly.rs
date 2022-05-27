@@ -46,13 +46,38 @@ impl From<Vec<isize>> for FPS {
     }
 }
 
+impl ops::Index<usize> for FPS {
+    type Output = isize;
+
+    #[inline]
+    fn index(&self, index: usize) -> &isize {
+        &self.terms[index]
+    }
+}
+
+impl ops::Index<ops::RangeToInclusive<usize>> for FPS {
+    type Output = [isize];
+
+    #[inline]
+    fn index(&self, index: ops::RangeToInclusive<usize>) -> &[isize] {
+        &self.terms[index]
+    }
+}
+
+impl ops::IndexMut<usize> for FPS {
+    #[inline]
+    fn index_mut(&mut self, index: usize) -> &mut isize {
+        &mut self.terms[index]
+    }
+}
+
 impl ops::AddAssign for FPS {
     fn add_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
             self.terms.resize(other.degree(), 0);
         }
         for i in 0..other.degree() {
-            self.terms[i] += other.terms[i];
+            self[i] += other[i];
         }
     }
 }
@@ -72,7 +97,7 @@ impl ops::SubAssign for FPS {
             self.terms.resize(other.degree(), 0);
         }
         for i in 0..other.degree() {
-            self.terms[i] -= other.terms[i];
+            self[i] -= other[i];
         }
     }
 }
@@ -105,7 +130,7 @@ impl ops::Mul for FPS {
                 if i >= m || j >= n {
                     continue;
                 }
-                coeff[k] += self.terms[i] * other.terms[j];
+                coeff[k] += self[i] * other[j];
             }
         }
         FPS::from(coeff)
@@ -137,6 +162,7 @@ impl ops::DivAssign for FPS {
 
 impl ops::Div for FPS {
     type Output = FPS;
+
     fn div(self, other: Self) -> FPS {
         let mut tmp = self.clone();
         tmp /= other;
@@ -166,6 +192,7 @@ impl ops::RemAssign for FPS {
 
 impl ops::Rem for FPS {
     type Output = FPS;
+
     fn rem(self, other: Self) -> FPS {
         let mut tmp = self.clone();
         tmp %= other;
@@ -209,11 +236,6 @@ impl FPS {
 }
 
 impl FPS {
-    // 不定元 (indeterminate)
-    pub fn x() -> FPS {
-        Self { terms: vec![0, 1] }
-    }
-
     // コンストラクタ
     pub fn term(coeff: isize, power: usize) -> FPS {
         match (coeff, power) {
@@ -230,6 +252,11 @@ impl FPS {
         }
     }
 
+    // 不定元 (indeterminate)
+    pub fn x() -> FPS {
+        FPS::term(1, 1)
+    }
+
     // 多項式の係数 (昇冪)
     pub fn coeff(&self) -> Vec<isize> {
         self.terms.clone()
@@ -244,7 +271,7 @@ impl FPS {
     pub fn leading_coefficient(&self) -> isize {
         match self.degree() {
             0 => 0,
-            _ => self.terms[self.degree() - 1],
+            _ => self[self.degree() - 1],
         }
     }
 
@@ -260,8 +287,8 @@ impl FPS {
 
     fn reduction(&mut self) {
         for i in (0..self.degree()).rev() {
-            if self.terms[i] != 0 {
-                self.terms = self.terms[..=i].to_vec();
+            if self[i] != 0 {
+                self.terms = self[..=i].to_vec();
                 return;
             }
         }
