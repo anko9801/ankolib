@@ -25,5 +25,5 @@ fn main() {
     let f: FPS = FPS::from(5) * (FPS::x() ^ 3)
         + (((FPS::x() ^ 3) + FPS::from(3)) ^ 2)
         + FPS::from(3) * FPS::x();
-    println!("Hello, world! {}", f);
+    println!("{}", f);
 }

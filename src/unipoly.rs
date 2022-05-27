@@ -98,6 +98,7 @@ impl ops::MulAssign for FPS {
     }
 }
 
+// TODO: conv multiply
 impl ops::Mul for FPS {
     type Output = Self;
     fn mul(self, other: Self) -> Self {
@@ -135,7 +136,7 @@ impl ops::DivAssign for FPS {
         *self = FPS::integer(0);
         for i in (0..deg).rev() {
             *self += FPS::integer(tmp.leading_coefficient()) * (FPS::x() ^ i);
-            tmp -= FPS::integer(tmp.leading_coefficient()) * other.clone() * (FPS::x() ^ i);
+            tmp -= FPS::integer(tmp.leading_coefficient()) * (FPS::x() ^ i) * other.clone();
         }
     }
 }
@@ -164,7 +165,7 @@ impl ops::RemAssign for FPS {
         }
 
         for i in (0..deg).rev() {
-            *self -= FPS::integer(self.leading_coefficient()) * other.clone() * (FPS::x() ^ i);
+            *self -= FPS::integer(self.leading_coefficient()) * (FPS::x() ^ i) * other.clone();
         }
     }
 }
