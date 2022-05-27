@@ -69,9 +69,9 @@ impl ops::Add for FPS {
 impl ops::SubAssign for FPS {
     fn sub_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
-            self.terms.extend(&other.terms[self.degree()..]);
+            self.terms.resize(other.degree(), 0);
         }
-        for i in 0..self.degree() {
+        for i in 0..other.degree() {
             self.terms[i] -= other.terms[i];
         }
     }
