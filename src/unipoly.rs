@@ -9,23 +9,27 @@ type FPS = FormalPowerSeries;
 
 impl fmt::Display for FPS {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for i in 0..self.degree() {
+        for i in (0..self.degree()).rev() {
+            if i != self.degree() - 1 && self.terms[i] != 0 {
+                write!(f, " + ");
+            }
+
             match (self.terms[i], i) {
                 (0, _) => (),
                 (_, 0) => {
-                    write!(f, " + {}", self.terms[i]);
+                    write!(f, "{}", self.terms[i]);
                 }
                 (1, 1) => {
-                    write!(f, " + x");
+                    write!(f, "x");
                 }
                 (1, _) => {
-                    write!(f, " + x^{}", i);
+                    write!(f, "x^{}", i);
                 }
                 (_, 1) => {
-                    write!(f, " + {}x", self.terms[i]);
+                    write!(f, "{}x", self.terms[i]);
                 }
                 _ => {
-                    write!(f, " + {}x^{}", self.terms[i], i);
+                    write!(f, "{}x^{}", self.terms[i], i);
                 }
             }
         }
@@ -90,19 +94,7 @@ impl ops::Sub for FPS {
 
 impl ops::MulAssign for FPS {
     fn mul_assign(&mut self, other: Self) {
-        let m = self.degree();
-        let n = other.degree();
-        let mut coeff = vec![0; m + n + 1];
-        for k in 0..=m + n {
-            for i in 0..=k {
-                let j = k - i;
-                if i >= m || j >= n {
-                    continue;
-                }
-                coeff[k] += self.terms[i] * other.terms[j];
-            }
-        }
-        self.terms = coeff;
+        *self = self.clone() * other;
     }
 }
 
@@ -111,8 +103,8 @@ impl ops::Mul for FPS {
     fn mul(self, other: Self) -> Self {
         let m = self.degree();
         let n = other.degree();
-        let mut coeff = vec![0; m + n + 1];
-        for k in 0..=m + n {
+        let mut coeff = vec![0; m + n - 1];
+        for k in 0..m + n - 1 {
             for i in 0..=k {
                 let j = k - i;
                 if i >= m || j >= n {
@@ -246,6 +238,7 @@ impl FPS {
         for i in (0..self.degree()).rev() {
             if self.terms[i] != 0 {
                 self.terms = self.terms[..=i].to_vec();
+                return;
             }
         }
     }
