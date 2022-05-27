@@ -253,16 +253,19 @@ impl FPS {
     }
 
     // 不定元 (indeterminate)
+    #[inline]
     pub fn x() -> FPS {
         FPS::term(1, 1)
     }
 
     // 多項式の係数 (昇冪)
+    #[inline]
     pub fn coeff(&self) -> Vec<isize> {
         self.terms.clone()
     }
 
     // 次数
+    #[inline]
     pub fn degree(&self) -> usize {
         self.terms.len()
     }
