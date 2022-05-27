@@ -51,13 +51,33 @@ impl FPS {
     }
 
     // モニック多項式
-    pub fn monic(&mut self) -> Result<FPS, &str> {
+    pub fn monic(&mut self) -> Result<Self, &str> {
         todo!();
     }
 
     // 代入
     pub fn dubs(&self, x: isize) -> isize {
         todo!();
+    }
+
+    pub fn gcd(&self, other: Self) -> Self {
+        todo!();
+    }
+
+    pub fn diff(&self) -> Self {
+        let mut ret = FPS::from(vec![0; self.degree() - 1]);
+        for i in 1..self.degree() {
+            ret[i - 1] = self[i] * i as isize;
+        }
+        ret
+    }
+
+    pub fn integral(&self) -> Self {
+        let mut ret = FPS::from(vec![0; self.degree() + 1]);
+        for i in 0..self.degree() {
+            ret[i + 1] = self[i] / (i + 1) as isize;
+        }
+        ret
     }
 
     fn reduction(&mut self) {
@@ -222,14 +242,6 @@ impl ops::BitXor<usize> for FPS {
         tmp ^= other;
         tmp
     }
-}
-
-impl FPS {
-    pub fn gcd(&self, other: Self) -> Self {
-        todo!();
-    }
-
-    pub fn diff(&self) {}
 }
 
 impl fmt::Display for FPS {
