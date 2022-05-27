@@ -5,8 +5,9 @@ use std::ops;
 pub struct FormalPowerSeries {
     terms: Vec<isize>,
 }
+type FPS = FormalPowerSeries;
 
-impl fmt::Display for FormalPowerSeries {
+impl fmt::Display for FPS {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for i in 0..self.degree() {
             match (self.terms[i], i) {
@@ -32,16 +33,16 @@ impl fmt::Display for FormalPowerSeries {
     }
 }
 
-impl From<isize> for FormalPowerSeries {
+impl From<isize> for FPS {
     fn from(num: isize) -> Self {
         match num {
-            0 => FormalPowerSeries { terms: vec![] },
-            _ => FormalPowerSeries { terms: vec![num] },
+            0 => FPS { terms: vec![] },
+            _ => FPS { terms: vec![num] },
         }
     }
 }
 
-impl ops::AddAssign for FormalPowerSeries {
+impl ops::AddAssign for FPS {
     fn add_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
             self.terms.extend(&other.terms[self.degree()..]);
@@ -58,7 +59,7 @@ impl ops::AddAssign for FormalPowerSeries {
     }
 }
 
-impl ops::Add for FormalPowerSeries {
+impl ops::Add for FPS {
     type Output = Self;
     fn add(self, other: Self) -> Self {
         let mut tmp = self.clone();
@@ -67,7 +68,7 @@ impl ops::Add for FormalPowerSeries {
     }
 }
 
-impl ops::SubAssign for FormalPowerSeries {
+impl ops::SubAssign for FPS {
     fn sub_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
             self.terms.extend(&other.terms[self.degree()..]);
@@ -78,7 +79,7 @@ impl ops::SubAssign for FormalPowerSeries {
     }
 }
 
-impl ops::Sub for FormalPowerSeries {
+impl ops::Sub for FPS {
     type Output = Self;
     fn sub(self, other: Self) -> Self {
         let mut tmp = self.clone();
@@ -87,7 +88,7 @@ impl ops::Sub for FormalPowerSeries {
     }
 }
 
-impl ops::MulAssign for FormalPowerSeries {
+impl ops::MulAssign for FPS {
     fn mul_assign(&mut self, other: Self) {
         let m = self.degree();
         let n = other.degree();
@@ -105,7 +106,7 @@ impl ops::MulAssign for FormalPowerSeries {
     }
 }
 
-impl ops::Mul for FormalPowerSeries {
+impl ops::Mul for FPS {
     type Output = Self;
     fn mul(self, other: Self) -> Self {
         let m = self.degree();
@@ -120,15 +121,15 @@ impl ops::Mul for FormalPowerSeries {
                 coeff[k] += self.terms[i] * other.terms[j];
             }
         }
-        FormalPowerSeries::from_coeff(coeff)
+        FPS::from_coeff(coeff)
     }
 }
 
-impl ops::DivAssign for FormalPowerSeries {
+impl ops::DivAssign for FPS {
     fn div_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
         if deg < 0 {
-            *self = FormalPowerSeries::integer(0);
+            *self = FPS::integer(0);
             return;
         }
 
@@ -139,31 +140,28 @@ impl ops::DivAssign for FormalPowerSeries {
         }
 
         let mut tmp = self.clone();
-        *self = FormalPowerSeries::integer(0);
+        *self = FPS::integer(0);
         for i in (0..deg).rev() {
-            *self += FormalPowerSeries::integer(tmp.leading_coefficient())
-                * (FormalPowerSeries::x() ^ i);
-            tmp -= FormalPowerSeries::integer(tmp.leading_coefficient())
-                * other.clone()
-                * (FormalPowerSeries::x() ^ i);
+            *self += FPS::integer(tmp.leading_coefficient()) * (FPS::x() ^ i);
+            tmp -= FPS::integer(tmp.leading_coefficient()) * other.clone() * (FPS::x() ^ i);
         }
     }
 }
 
-impl ops::Div for FormalPowerSeries {
-    type Output = FormalPowerSeries;
-    fn div(self, other: Self) -> FormalPowerSeries {
+impl ops::Div for FPS {
+    type Output = FPS;
+    fn div(self, other: Self) -> FPS {
         let mut tmp = self.clone();
         tmp /= other;
         tmp
     }
 }
 
-impl ops::RemAssign for FormalPowerSeries {
+impl ops::RemAssign for FPS {
     fn rem_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
         if deg < 0 {
-            *self = FormalPowerSeries::integer(0);
+            *self = FPS::integer(0);
             return;
         }
 
@@ -174,29 +172,27 @@ impl ops::RemAssign for FormalPowerSeries {
         }
 
         for i in (0..deg).rev() {
-            *self -= FormalPowerSeries::integer(self.leading_coefficient())
-                * other.clone()
-                * (FormalPowerSeries::x() ^ i);
+            *self -= FPS::integer(self.leading_coefficient()) * other.clone() * (FPS::x() ^ i);
         }
     }
 }
 
-impl ops::Rem for FormalPowerSeries {
-    type Output = FormalPowerSeries;
-    fn rem(self, other: Self) -> FormalPowerSeries {
+impl ops::Rem for FPS {
+    type Output = FPS;
+    fn rem(self, other: Self) -> FPS {
         let mut tmp = self.clone();
         tmp %= other;
         tmp
     }
 }
 
-impl ops::BitXorAssign<usize> for FormalPowerSeries {
+impl ops::BitXorAssign<usize> for FPS {
     fn bitxor_assign(&mut self, other: usize) {
         // let size = self.degree() * other;
         // self.terms.resize(size, 0);
         let mut tmp = self.clone();
         let mut bin = 1;
-        let mut ans = FormalPowerSeries::integer(1);
+        let mut ans = FPS::integer(1);
         while bin <= other {
             if bin & other > 0 {
                 ans *= tmp.clone();
@@ -208,7 +204,7 @@ impl ops::BitXorAssign<usize> for FormalPowerSeries {
     }
 }
 
-impl ops::BitXor<usize> for FormalPowerSeries {
+impl ops::BitXor<usize> for FPS {
     type Output = Self;
     fn bitxor(self, other: usize) -> Self {
         let mut tmp = self.clone();
@@ -217,21 +213,21 @@ impl ops::BitXor<usize> for FormalPowerSeries {
     }
 }
 
-impl FormalPowerSeries {
+impl FPS {
     pub fn gcd(&self, other: Self) -> Self {
         todo!();
     }
 }
 
-impl FormalPowerSeries {
+impl FPS {
     // 不定元 (indeterminate)
-    pub fn x() -> FormalPowerSeries {
+    pub fn x() -> FPS {
         Self { terms: vec![0, 1] }
     }
 
     // 整数 (from)
-    pub fn integer(num: isize) -> FormalPowerSeries {
-        FormalPowerSeries::from(num)
+    pub fn integer(num: isize) -> FPS {
+        FPS::from(num)
     }
 
     // 多項式の係数 (昇冪)
@@ -240,7 +236,7 @@ impl FormalPowerSeries {
     }
 
     // 係数
-    pub fn from_coeff(coeff: Vec<isize>) -> FormalPowerSeries {
+    pub fn from_coeff(coeff: Vec<isize>) -> FPS {
         let mut poly = Self { terms: coeff };
         poly.reduction();
         poly
@@ -268,7 +264,7 @@ impl FormalPowerSeries {
     }
 
     // モニック多項式
-    pub fn monic(&mut self) -> Result<FormalPowerSeries, &str> {
+    pub fn monic(&mut self) -> Result<FPS, &str> {
         todo!();
     }
 
