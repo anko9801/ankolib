@@ -60,6 +60,10 @@ impl FPS {
         todo!();
     }
 
+    pub fn log(&self) {
+        todo!();
+    }
+
     pub fn gcd(&self, other: Self) -> Self {
         todo!();
     }
