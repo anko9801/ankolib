@@ -2,7 +2,13 @@
 
 ## Roadmap
 
+- [ ] Modulus
 - [ ] Polynomial Ring
-  - [  ] Univariate Polynomial Ring
-    - [  ] GCD
-    - [  ] Gröbner basis
+  - [x] Basic arithmetics
+  - [ ] Univariate Polynomial Ring
+    - [ ] Half GCD
+  - [ ] Multivariate Polynomial Ring
+    - [ ] Resultant
+    - [ ] Gröbner basis
+- [ ] Elliptic Curve
+  - [ ] Jacobian varieties
