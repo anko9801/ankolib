@@ -5,17 +5,17 @@ use std::ops;
 pub struct FormalPowerSeries {
     terms: Vec<isize>,
 }
-type FPS = FormalPowerSeries;
+pub type FPS = FormalPowerSeries;
 
 impl FPS {
     // コンストラクタ
     pub fn term(coeff: isize, power: usize) -> FPS {
         match (coeff, power) {
-            (0, _) => FPS::from(vec![]),
+            (0, _) => FPS::from(vec![0]),
             (_, 0) => FPS::from(vec![coeff]),
             (_, _) => {
                 let mut poly = Vec::with_capacity(power);
-                for i in 0..power {
+                for _ in 0..power {
                     poly.push(0);
                 }
                 poly.push(coeff);
@@ -36,17 +36,17 @@ impl FPS {
         self.terms.clone()
     }
 
-    // 次数
+    // 次数 (TODO: 0の次数を0ではなく負の無限大とする)
     #[inline]
     pub fn degree(&self) -> usize {
-        self.terms.len()
+        self.terms.len() - 1
     }
 
     // 最高次の係数
     pub fn leading_coefficient(&self) -> isize {
         match self.degree() {
             0 => 0,
-            _ => self[self.degree() - 1],
+            deg => self[deg],
         }
     }
 
@@ -64,28 +64,33 @@ impl FPS {
         todo!();
     }
 
+    pub fn pseudo_div(&self, other: Self) {}
+
+    pub fn pseudo_rem(&self, other: Self) {}
+
+    // TODO: Half GCD
     pub fn gcd(&self, other: Self) -> Self {
         todo!();
     }
 
     pub fn diff(&self) -> Self {
-        let mut ret = FPS::from(vec![0; self.degree() - 1]);
-        for i in 1..self.degree() {
+        let mut ret = FPS::from(vec![0; self.degree()]);
+        for i in 1..=self.degree() {
             ret[i - 1] = self[i] * i as isize;
         }
         ret
     }
 
     pub fn integral(&self) -> Self {
-        let mut ret = FPS::from(vec![0; self.degree() + 1]);
-        for i in 0..self.degree() {
+        let mut ret = FPS::from(vec![0; self.degree() + 2]);
+        for i in 0..=self.degree() {
             ret[i + 1] = self[i] / (i + 1) as isize;
         }
         ret
     }
 
     fn reduction(&mut self) {
-        for i in (0..self.degree()).rev() {
+        for i in (0..=self.degree()).rev() {
             if self[i] != 0 {
                 self.terms = self[..=i].to_vec();
                 return;
@@ -97,9 +102,9 @@ impl FPS {
 impl ops::AddAssign for FPS {
     fn add_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
-            self.terms.resize(other.degree(), 0);
+            self.terms.resize(other.degree() + 1, 0);
         }
-        for i in 0..other.degree() {
+        for i in 0..=other.degree() {
             self[i] += other[i];
         }
     }
@@ -108,9 +113,9 @@ impl ops::AddAssign for FPS {
 impl ops::SubAssign for FPS {
     fn sub_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
-            self.terms.resize(other.degree(), 0);
+            self.terms.resize(other.degree() + 1, 0);
         }
-        for i in 0..other.degree() {
+        for i in 0..=other.degree() {
             self[i] -= other[i];
         }
     }
@@ -122,11 +127,11 @@ impl ops::Mul for FPS {
     fn mul(self, other: Self) -> Self {
         let m = self.degree();
         let n = other.degree();
-        let mut coeff = vec![0; m + n - 1];
-        for k in 0..m + n - 1 {
+        let mut coeff = vec![0; m + n + 1];
+        for k in 0..m + n + 1 {
             for i in 0..=k {
                 let j = k - i;
-                if i >= m || j >= n {
+                if i > m || j > n {
                     continue;
                 }
                 coeff[k] += self[i] * other[j];
@@ -139,22 +144,22 @@ impl ops::Mul for FPS {
 impl ops::DivAssign for FPS {
     fn div_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
-        if deg < 0 {
+        if self.degree() < other.degree() {
             *self = FPS::term(0, 0);
             return;
         }
 
         // モニック
-        let lead = other.leading_coefficient();
-        if lead != 1 {
+        let lc = other.leading_coefficient();
+        if lc != 1 {
             return;
         }
 
         let mut tmp = self.clone();
         *self = FPS::term(0, 0);
-        for i in (0..deg).rev() {
-            *self += FPS::term(tmp.leading_coefficient(), i);
-            tmp -= FPS::term(tmp.leading_coefficient(), i) * other.clone();
+        for power in (0..deg).rev() {
+            *self += FPS::term(tmp.leading_coefficient(), power);
+            tmp -= FPS::term(tmp.leading_coefficient(), power) * other.clone();
         }
     }
 }
@@ -162,19 +167,19 @@ impl ops::DivAssign for FPS {
 impl ops::RemAssign for FPS {
     fn rem_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
-        if deg < 0 {
+        if self.degree() < other.degree() {
             *self = FPS::term(0, 0);
             return;
         }
 
         // モニック
-        let lead = other.leading_coefficient();
-        if lead != 1 {
+        let lc = other.leading_coefficient();
+        if lc != 1 {
             return;
         }
 
-        for i in (0..deg).rev() {
-            *self -= FPS::term(self.leading_coefficient(), i) * other.clone();
+        for power in (0..deg).rev() {
+            *self -= FPS::term(self.leading_coefficient(), power) * other.clone();
         }
     }
 }
@@ -250,31 +255,31 @@ impl ops::BitXor<usize> for FPS {
 
 impl fmt::Display for FPS {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for i in (0..self.degree()).rev() {
-            if i != self.degree() - 1 && self.terms[i] != 0 {
-                write!(f, " + ");
+        for i in (0..=self.degree()).rev() {
+            if i != self.degree() && self.terms[i] != 0 {
+                write!(f, " + ")?;
             }
 
             match (self.terms[i], i) {
                 (0, _) => (),
                 (_, 0) => {
-                    write!(f, "{}", self.terms[i]);
+                    write!(f, "{}", self.terms[i])?;
                 }
                 (1, 1) => {
-                    write!(f, "x");
+                    write!(f, "x")?;
                 }
                 (1, _) => {
-                    write!(f, "x^{}", i);
+                    write!(f, "x^{}", i)?;
                 }
                 (_, 1) => {
-                    write!(f, "{}x", self.terms[i]);
+                    write!(f, "{}x", self.terms[i])?;
                 }
                 _ => {
-                    write!(f, "{}x^{}", self.terms[i], i);
+                    write!(f, "{}x^{}", self.terms[i], i)?;
                 }
             }
         }
-        write!(f, "")
+        Ok(())
     }
 }
 

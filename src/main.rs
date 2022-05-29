@@ -7,8 +7,7 @@ mod unipoly;
 // use crate::math::*;
 // use crate::rings::integer_mod_ring::*;
 // use crate::rings::ring::*;
-use crate::unipoly::FormalPowerSeries;
-type FPS = FormalPowerSeries;
+use crate::unipoly::FPS;
 
 fn main() {
     // let R = Zmod::from(20);
