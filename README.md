@@ -2,11 +2,6 @@
 
 ## Roadmap
 
-- [ ] Numbers
-  - [ ] Integer
-  - [ ] Rational number
-  - [ ] Real number
-  - [ ] Complex
 - [ ] Mathematical Structures
   - [ ] Sets
   - [ ] Monoids
@@ -16,14 +11,20 @@
   - [ ] Algebras
 - [ ] Basic Rings and Fields
   - [ ] Integers and Rational Numbers
+    - [ ] Integer
+    - [ ] Rational number
   - [ ] Real and Complex Numbers
+    - [ ] Real number
+    - [ ] Complex
   - [ ] Commutative Polynomials
-  - [ ] Power Series and Laurent Series
     - [ ] Univariate Polynomial Ring
       - [ ] Half GCD
     - [ ] Multivariate Polynomial Ring
       - [ ] Resultant
       - [ ] Gröbner basis
+  - [ ] Power Series and Laurent Series
+    - [x] Power Series
+    - [ ] Laurent Series
   - [ ] Finite Rings and Fields
   - [ ] p-adic Numbers
   - [ ] Noncommutative Polynomials
