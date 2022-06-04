@@ -1,5 +1,6 @@
 extern crate num;
 use num::BigInt;
+use std::fmt;
 use std::ops;
 
 pub type Integer = BigInt;
@@ -71,7 +72,7 @@ impl ops::DivAssign<&Rational> for Rational {
 }
 
 impl ops::Add<&Rational> for Rational {
-    type Output = Rational;
+    type Output = Self;
     fn add(self, other: &Self) -> Self {
         let mut tmp = self.clone();
         tmp += &other;
@@ -80,7 +81,7 @@ impl ops::Add<&Rational> for Rational {
 }
 
 impl ops::Sub<&Rational> for Rational {
-    type Output = Rational;
+    type Output = Self;
     fn sub(self, other: &Self) -> Self {
         let mut tmp = self.clone();
         tmp -= &other;
@@ -89,7 +90,7 @@ impl ops::Sub<&Rational> for Rational {
 }
 
 impl ops::Mul<&Rational> for Rational {
-    type Output = Rational;
+    type Output = Self;
     fn mul(self, other: &Self) -> Self {
         let mut tmp = self.clone();
         tmp *= &other;
@@ -98,10 +99,16 @@ impl ops::Mul<&Rational> for Rational {
 }
 
 impl ops::Div<&Rational> for Rational {
-    type Output = Rational;
+    type Output = Self;
     fn div(self, other: &Self) -> Self {
         let mut tmp = self.clone();
         tmp /= &other;
         tmp
+    }
+}
+
+impl fmt::Display for Rational {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} / {}", self.numerator, self.denominator)
     }
 }
