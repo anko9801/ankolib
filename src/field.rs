@@ -1,3 +1,5 @@
+pub trait Field: Ring, ops::Div {}
+
 pub trait Fq {
     fn inv(self) -> Self;
     fn square_root(self) -> Self;
