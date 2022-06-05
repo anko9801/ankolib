@@ -10,9 +10,9 @@
   - [ ] Rings
   - [ ] Algebras
 - [ ] Basic Rings and Fields
-  - [ ] Integers and Rational Numbers
-    - [ ] Integer
-    - [ ] Rational number
+  - [x] Integers and Rational Numbers
+    - [x] Integer
+    - [x] Rational number
   - [ ] Real and Complex Numbers
     - [ ] Real number
     - [ ] Complex
