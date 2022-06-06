@@ -1,3 +1,5 @@
+use crate::integer::Integer;
+
 pub struct Zmod {
     MOD: usize,
 }
@@ -24,7 +26,7 @@ macro_rules! impl_integer {
         impl Elem<$t> for Zmod {
             fn elem(&self, elem: $t) -> ZmodInt {
                 ZmodInt {
-                    elem: elem as i64,
+                    elem: elem as Integer,
                     ring: *self,
                 }
             }
@@ -37,7 +39,7 @@ impl_integer!(u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize);
 
 // TODO: Integer / Rational struct
 pub struct ZmodInt {
-    elem: i64,
+    elem: Integer,
     ring: Zmod,
 }
 

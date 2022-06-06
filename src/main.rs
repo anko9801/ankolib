@@ -1,5 +1,5 @@
 // mod field;
-// mod group;
+mod group;
 // mod math;
 // mod rings;
 mod integer;
