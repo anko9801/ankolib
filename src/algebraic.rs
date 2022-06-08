@@ -1,8 +1,9 @@
 pub mod field;
-pub mod min;
+pub mod minmax;
 pub mod poly;
 pub mod tropical;
 // pub mod ring;
+pub mod matrix;
 pub mod unipoly;
 
 use std::marker::Sized;
