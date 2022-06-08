@@ -4,11 +4,11 @@
 
 - [ ] Mathematical Structures
   - [ ] Sets
-  - [ ] Monoids
-  - [ ] Groups
-  - [ ] Semirings
-  - [ ] Rings
-  - [ ] Algebras
+  - [x] Monoids
+  - [x] Groups
+  - [x] Semirings
+  - [x] Rings
+  - [x] Algebras
 - [ ] Basic Rings and Fields
   - [x] Integers and Rational Numbers
     - [x] Integer
