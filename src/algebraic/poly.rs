@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::ops;
+use std::ops::{Add, AddAssign};
 
 #[derive(Debug, Clone, Copy, Hash)]
 struct Var {
@@ -47,11 +47,11 @@ impl From<Var> for Poly {
     }
 }
 
-impl ops::AddAssign for Poly {
+impl AddAssign for Poly {
     fn add_assign(&mut self, other: Self) {}
 }
 
-impl ops::Add for Poly {
+impl Add for Poly {
     type Output = Self;
     fn add(self, other: Self) -> Self {
         let mut tmp = self.clone();

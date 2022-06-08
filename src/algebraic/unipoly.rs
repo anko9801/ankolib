@@ -1,5 +1,8 @@
 use std::fmt;
-use std::ops;
+use std::ops::{
+    Add, AddAssign, BitXor, BitXorAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Range,
+    RangeToInclusive, Rem, RemAssign, Sub, SubAssign,
+};
 
 #[derive(Debug, Clone)]
 pub struct FormalPowerSeries {
@@ -99,7 +102,7 @@ impl FPS {
     }
 }
 
-impl ops::AddAssign for FPS {
+impl AddAssign for FPS {
     fn add_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
             self.terms.resize(other.degree() + 1, 0);
@@ -110,7 +113,7 @@ impl ops::AddAssign for FPS {
     }
 }
 
-impl ops::SubAssign for FPS {
+impl SubAssign for FPS {
     fn sub_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
             self.terms.resize(other.degree() + 1, 0);
@@ -122,7 +125,7 @@ impl ops::SubAssign for FPS {
 }
 
 // TODO: conv multiply
-impl ops::Mul for FPS {
+impl Mul for FPS {
     type Output = Self;
     fn mul(self, other: Self) -> Self {
         let m = self.degree();
@@ -141,7 +144,7 @@ impl ops::Mul for FPS {
     }
 }
 
-impl ops::DivAssign for FPS {
+impl DivAssign for FPS {
     fn div_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
         if self.degree() < other.degree() {
@@ -164,7 +167,7 @@ impl ops::DivAssign for FPS {
     }
 }
 
-impl ops::RemAssign for FPS {
+impl RemAssign for FPS {
     fn rem_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
         if self.degree() < other.degree() {
@@ -184,7 +187,7 @@ impl ops::RemAssign for FPS {
     }
 }
 
-impl ops::BitXorAssign<usize> for FPS {
+impl BitXorAssign<usize> for FPS {
     fn bitxor_assign(&mut self, other: usize) {
         // let size = self.degree() * other;
         // self.terms.resize(size, 0);
@@ -202,7 +205,7 @@ impl ops::BitXorAssign<usize> for FPS {
     }
 }
 
-impl ops::Add for FPS {
+impl Add for FPS {
     type Output = Self;
     fn add(self, other: Self) -> Self {
         let mut tmp = self.clone();
@@ -211,7 +214,7 @@ impl ops::Add for FPS {
     }
 }
 
-impl ops::Sub for FPS {
+impl Sub for FPS {
     type Output = Self;
     fn sub(self, other: Self) -> Self {
         let mut tmp = self.clone();
@@ -220,13 +223,13 @@ impl ops::Sub for FPS {
     }
 }
 
-impl ops::MulAssign for FPS {
+impl MulAssign for FPS {
     fn mul_assign(&mut self, other: Self) {
         *self = self.clone() * other;
     }
 }
 
-impl ops::Div for FPS {
+impl Div for FPS {
     type Output = Self;
     fn div(self, other: Self) -> Self {
         let mut tmp = self.clone();
@@ -235,7 +238,7 @@ impl ops::Div for FPS {
     }
 }
 
-impl ops::Rem for FPS {
+impl Rem for FPS {
     type Output = Self;
     fn rem(self, other: Self) -> Self {
         let mut tmp = self.clone();
@@ -244,7 +247,7 @@ impl ops::Rem for FPS {
     }
 }
 
-impl ops::BitXor<usize> for FPS {
+impl BitXor<usize> for FPS {
     type Output = Self;
     fn bitxor(self, other: usize) -> Self {
         let mut tmp = self.clone();
@@ -292,25 +295,25 @@ impl From<Vec<isize>> for FPS {
     }
 }
 
-impl ops::Index<usize> for FPS {
+impl Index<usize> for FPS {
     type Output = isize;
 
     #[inline]
-    fn index(&self, index: usize) -> &isize {
+    fn index(&self, index: usize) -> &Self::Output {
         &self.terms[index]
     }
 }
 
-impl ops::Index<ops::RangeToInclusive<usize>> for FPS {
+impl Index<RangeToInclusive<usize>> for FPS {
     type Output = [isize];
 
     #[inline]
-    fn index(&self, index: ops::RangeToInclusive<usize>) -> &[isize] {
+    fn index(&self, index: RangeToInclusive<usize>) -> &[isize] {
         &self.terms[index]
     }
 }
 
-impl ops::IndexMut<usize> for FPS {
+impl IndexMut<usize> for FPS {
     #[inline]
     fn index_mut(&mut self, index: usize) -> &mut isize {
         &mut self.terms[index]

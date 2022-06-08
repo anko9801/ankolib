@@ -1,7 +1,7 @@
 extern crate num;
 use num::BigInt;
 use std::fmt;
-use std::ops;
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 pub type Integer = BigInt;
 
@@ -35,7 +35,7 @@ pub struct Rational {
     denominator: Integer,
 }
 
-impl ops::AddAssign<&Rational> for Rational {
+impl AddAssign<&Rational> for Rational {
     fn add_assign(&mut self, other: &Self) {
         let num = self.numerator.clone() * other.denominator.clone()
             + other.numerator.clone() * self.denominator.clone();
@@ -46,7 +46,7 @@ impl ops::AddAssign<&Rational> for Rational {
     }
 }
 
-impl ops::SubAssign<&Rational> for Rational {
+impl SubAssign<&Rational> for Rational {
     fn sub_assign(&mut self, other: &Self) {
         let num = self.numerator.clone() * other.denominator.clone()
             - other.numerator.clone() * self.denominator.clone();
@@ -57,21 +57,21 @@ impl ops::SubAssign<&Rational> for Rational {
     }
 }
 
-impl ops::MulAssign<&Rational> for Rational {
+impl MulAssign<&Rational> for Rational {
     fn mul_assign(&mut self, other: &Self) {
         self.numerator = self.numerator.clone() * other.numerator.clone();
         self.denominator = self.denominator.clone() * other.denominator.clone();
     }
 }
 
-impl ops::DivAssign<&Rational> for Rational {
+impl DivAssign<&Rational> for Rational {
     fn div_assign(&mut self, other: &Self) {
         self.numerator = self.numerator.clone() * other.numerator.clone();
         self.denominator = self.denominator.clone() * other.denominator.clone();
     }
 }
 
-impl ops::Add<&Rational> for Rational {
+impl Add<&Rational> for Rational {
     type Output = Self;
     fn add(self, other: &Self) -> Self {
         let mut tmp = self.clone();
@@ -80,7 +80,7 @@ impl ops::Add<&Rational> for Rational {
     }
 }
 
-impl ops::Sub<&Rational> for Rational {
+impl Sub<&Rational> for Rational {
     type Output = Self;
     fn sub(self, other: &Self) -> Self {
         let mut tmp = self.clone();
@@ -89,7 +89,7 @@ impl ops::Sub<&Rational> for Rational {
     }
 }
 
-impl ops::Mul<&Rational> for Rational {
+impl Mul<&Rational> for Rational {
     type Output = Self;
     fn mul(self, other: &Self) -> Self {
         let mut tmp = self.clone();
@@ -98,7 +98,7 @@ impl ops::Mul<&Rational> for Rational {
     }
 }
 
-impl ops::Div<&Rational> for Rational {
+impl Div<&Rational> for Rational {
     type Output = Self;
     fn div(self, other: &Self) -> Self {
         let mut tmp = self.clone();
