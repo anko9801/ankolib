@@ -1,14 +1,13 @@
 // mod field;
-mod group;
 // mod math;
 // mod rings;
+mod algebraic;
 mod integer;
-mod unipoly;
 
 // use crate::math::*;
 // use crate::rings::integer_mod_ring::*;
 // use crate::rings::ring::*;
-use crate::unipoly::FPS;
+use crate::algebraic::unipoly::FPS;
 
 fn main() {
     // let R = Zmod::from(20);

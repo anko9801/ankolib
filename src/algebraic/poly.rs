@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::ops;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Hash)]
 struct Var {
     sub: isize,
 }
@@ -19,7 +19,7 @@ pub struct Poly {
 
 impl PartialEq for Base {
     fn eq(&self, other: &Self) -> bool {
-        for (var, power) in self.base {}
+        // for (var, power) in self.base {}
         true
     }
 }
@@ -27,7 +27,7 @@ impl Eq for Base {}
 
 impl fmt::Display for Poly {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (var, coeff) in self.terms {
+        for (var, coeff) in &self.terms {
             match coeff {
                 1 => write!(f, "x"),
                 _ => write!(f, "{}x", coeff),
@@ -61,7 +61,7 @@ impl ops::Add for Poly {
 }
 
 impl Poly {
-    pub fn x() -> Var {
+    fn x() -> Var {
         Var { sub: 0 }
     }
 }
