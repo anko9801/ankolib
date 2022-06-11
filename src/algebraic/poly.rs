@@ -19,7 +19,6 @@ pub struct Poly {
 
 impl PartialEq for Base {
     fn eq(&self, rhs: &Self) -> bool {
-        // for (var, power) in self.base {}
         true
     }
 }
@@ -29,9 +28,9 @@ impl fmt::Display for Poly {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (var, coeff) in &self.terms {
             match coeff {
-                1 => write!(f, "x"),
-                _ => write!(f, "{}x", coeff),
-            };
+                1 => write!(f, "{:?}", var),
+                _ => write!(f, "{}{:?}", coeff, var),
+            }?
         }
         write!(f, "")
     }
@@ -57,11 +56,5 @@ impl Add for Poly {
         let mut tmp = self.clone();
         tmp += rhs;
         tmp
-    }
-}
-
-impl Poly {
-    fn x() -> Var {
-        Var { sub: 0 }
     }
 }

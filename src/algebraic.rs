@@ -6,6 +6,7 @@ pub mod ring;
 pub mod tropical;
 pub mod unipoly;
 
+use crate::util::trait_alias;
 use std::marker::Sized;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
@@ -71,13 +72,6 @@ pub fn one<T: One>() -> T {
     T::one()
 }
 
-macro_rules! trait_alias {
-    ($name:ident = $($t:tt)*) => {
-        pub trait $name: $($t)* {}
-        impl<T: $($t)*> $name for T {}
-    }
-}
-
 trait_alias! {Semigroup = Add<Output = Self> + AddAssign + Sized + Clone}
 trait_alias! {Monoid = Semigroup + Zero}
 trait_alias! {Group = Monoid + Neg<Output = Self> + Sub<Output = Self> + SubAssign}
@@ -91,7 +85,7 @@ trait_alias! {CommutativeSemiring = Semiring + ScalarPow}
 trait_alias! {CommutativeRing = Ring + ScalarPow}
 trait_alias! {Field = CommutativeRing + Div<Output = Self> + DivAssign}
 
-// これ演算が被っててよくない
+// これ演算が被っててよくない <- ほんまか？
 pub trait MapMonoid<S: Monoid, F: Monoid> {
     fn mapping(f: &F, x: &S) -> S;
 }

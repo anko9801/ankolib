@@ -4,6 +4,7 @@
 mod algebraic;
 mod graph;
 mod integer;
+mod util;
 
 // use crate::math::*;
 // use crate::rings::integer_mod_ring::*;

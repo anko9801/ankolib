@@ -1,4 +1,5 @@
 use crate::algebraic::{one, zero, CommutativeRing, One, ScalarMul, ScalarPow, Zero};
+use crate::util::trait_alias;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::{
@@ -7,26 +8,11 @@ use std::ops::{
 };
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct FormalPowerSeries<T: CommutativeRing + Clone + Eq>(Vec<T>);
-
+pub struct FormalPowerSeries<T: CRing>(Vec<T>);
 pub type FPS<T> = FormalPowerSeries<T>;
+trait_alias! {CRing = CommutativeRing + Clone + Eq + Display}
 
-impl<T: CommutativeRing + Clone + Eq> Zero for FPS<T> {
-    fn zero() -> Self {
-        FPS::from(vec![zero()])
-    }
-    fn is_zero(&self) -> bool {
-        *self == FPS::from(vec![zero()])
-    }
-}
-
-impl<T: CommutativeRing + Clone + Eq> One for FPS<T> {
-    fn one() -> Self {
-        FPS::from(vec![one()])
-    }
-}
-
-impl<T: CommutativeRing + Clone + Eq> FPS<T> {
+impl<T: CRing> FPS<T> {
     // コンストラクタ
     pub fn term(coeff: T, power: usize) -> FPS<T> {
         match (&coeff, power) {
@@ -122,7 +108,22 @@ impl<T: CommutativeRing + Clone + Eq> FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> AddAssign for FPS<T> {
+impl<T: CRing> Zero for FPS<T> {
+    fn zero() -> Self {
+        FPS::from(vec![zero()])
+    }
+    fn is_zero(&self) -> bool {
+        *self == FPS::from(vec![zero()])
+    }
+}
+
+impl<T: CRing> One for FPS<T> {
+    fn one() -> Self {
+        FPS::from(vec![one()])
+    }
+}
+
+impl<T: CRing> AddAssign for FPS<T> {
     fn add_assign(&mut self, rhs: Self) {
         if self.degree() < rhs.degree() {
             self.0.resize(rhs.degree() + 1, zero());
@@ -133,7 +134,7 @@ impl<T: CommutativeRing + Clone + Eq> AddAssign for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> SubAssign for FPS<T> {
+impl<T: CRing> SubAssign for FPS<T> {
     fn sub_assign(&mut self, rhs: Self) {
         if self.degree() < rhs.degree() {
             self.0.resize(rhs.degree() + 1, zero());
@@ -144,13 +145,13 @@ impl<T: CommutativeRing + Clone + Eq> SubAssign for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> MulAssign for FPS<T> {
+impl<T: CRing> MulAssign for FPS<T> {
     fn mul_assign(&mut self, rhs: Self) {
         *self = self.clone() * rhs;
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> DivAssign for FPS<T> {
+impl<T: CRing> DivAssign for FPS<T> {
     fn div_assign(&mut self, rhs: Self) {
         let deg = self.degree() - rhs.degree();
         if self.degree() < rhs.degree() {
@@ -173,7 +174,7 @@ impl<T: CommutativeRing + Clone + Eq> DivAssign for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> RemAssign for FPS<T> {
+impl<T: CRing> RemAssign for FPS<T> {
     fn rem_assign(&mut self, rhs: Self) {
         let deg = self.degree() - rhs.degree();
         if self.degree() < rhs.degree() {
@@ -193,7 +194,7 @@ impl<T: CommutativeRing + Clone + Eq> RemAssign for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> BitXorAssign<usize> for FPS<T> {
+impl<T: CRing> BitXorAssign<usize> for FPS<T> {
     fn bitxor_assign(&mut self, rhs: usize) {
         // let size = self.degree() * rhs;
         // self.0.resize(size, 0);
@@ -211,7 +212,7 @@ impl<T: CommutativeRing + Clone + Eq> BitXorAssign<usize> for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> Add for FPS<T> {
+impl<T: CRing> Add for FPS<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         let mut tmp = self.clone();
@@ -220,7 +221,7 @@ impl<T: CommutativeRing + Clone + Eq> Add for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> Neg for FPS<T> {
+impl<T: CRing> Neg for FPS<T> {
     type Output = Self;
     fn neg(self) -> Self {
         let mut tmp = self.clone();
@@ -231,7 +232,7 @@ impl<T: CommutativeRing + Clone + Eq> Neg for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> Sub for FPS<T> {
+impl<T: CRing> Sub for FPS<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
         let mut tmp = self.clone();
@@ -241,7 +242,7 @@ impl<T: CommutativeRing + Clone + Eq> Sub for FPS<T> {
 }
 
 // TODO: conv multiply
-impl<T: CommutativeRing + Clone + Eq> Mul for FPS<T> {
+impl<T: CRing> Mul for FPS<T> {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self {
         let m = self.degree();
@@ -260,7 +261,7 @@ impl<T: CommutativeRing + Clone + Eq> Mul for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> ScalarMul for FPS<T> {
+impl<T: CRing> ScalarMul for FPS<T> {
     fn scalar_mul(&self, rhs: usize) -> Self {
         let mut tmp = self.clone();
         for i in 0..self.degree() {
@@ -269,9 +270,9 @@ impl<T: CommutativeRing + Clone + Eq> ScalarMul for FPS<T> {
         tmp
     }
 }
-impl<T: CommutativeRing + Clone + Eq> ScalarPow for FPS<T> {}
+impl<T: CRing> ScalarPow for FPS<T> {}
 
-impl<T: CommutativeRing + Clone + Eq> Div for FPS<T> {
+impl<T: CRing> Div for FPS<T> {
     type Output = Self;
     fn div(self, rhs: Self) -> Self {
         let mut tmp = self.clone();
@@ -280,7 +281,7 @@ impl<T: CommutativeRing + Clone + Eq> Div for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> Rem for FPS<T> {
+impl<T: CRing> Rem for FPS<T> {
     type Output = Self;
     fn rem(self, rhs: Self) -> Self {
         let mut tmp = self.clone();
@@ -289,7 +290,7 @@ impl<T: CommutativeRing + Clone + Eq> Rem for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> BitXor<usize> for FPS<T> {
+impl<T: CRing> BitXor<usize> for FPS<T> {
     type Output = Self;
     fn bitxor(self, rhs: usize) -> Self {
         let mut tmp = self.clone();
@@ -298,7 +299,7 @@ impl<T: CommutativeRing + Clone + Eq> BitXor<usize> for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq + Display> Display for FPS<T> {
+impl<T: CRing> Display for FPS<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         for i in (0..=self.degree()).rev() {
             if i != self.degree() && self[i] != zero() {
@@ -329,7 +330,7 @@ impl<T: CommutativeRing + Clone + Eq + Display> Display for FPS<T> {
 }
 
 // 係数
-impl<T: CommutativeRing + Clone + Eq> From<Vec<T>> for FPS<T> {
+impl<T: CRing> From<Vec<T>> for FPS<T> {
     fn from(coeff: Vec<T>) -> Self {
         let mut poly = Self { 0: coeff };
         poly.reduction();
@@ -337,7 +338,7 @@ impl<T: CommutativeRing + Clone + Eq> From<Vec<T>> for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> Index<usize> for FPS<T> {
+impl<T: CRing> Index<usize> for FPS<T> {
     type Output = T;
 
     #[inline]
@@ -346,7 +347,7 @@ impl<T: CommutativeRing + Clone + Eq> Index<usize> for FPS<T> {
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> Index<RangeToInclusive<usize>> for FPS<T> {
+impl<T: CRing> Index<RangeToInclusive<usize>> for FPS<T> {
     type Output = [T];
 
     #[inline]
@@ -355,7 +356,7 @@ impl<T: CommutativeRing + Clone + Eq> Index<RangeToInclusive<usize>> for FPS<T> 
     }
 }
 
-impl<T: CommutativeRing + Clone + Eq> IndexMut<usize> for FPS<T> {
+impl<T: CRing> IndexMut<usize> for FPS<T> {
     #[inline]
     fn index_mut(&mut self, index: usize) -> &mut T {
         &mut self.0[index]
