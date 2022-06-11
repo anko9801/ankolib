@@ -17,8 +17,13 @@ pub trait Zero: Add<Output = Self> + Sized {
 pub trait One: Mul<Output = Self> + Sized {
     fn one() -> Self;
 }
+pub fn zero<T: Zero>() -> T {
+    T::zero()
+}
+pub fn one<T: One>() -> T {
+    T::one()
+}
 
-// commutative
 pub trait ScalarMul: Semigroup {
     fn scalar_mul(&self, e: usize) -> Self;
 }
@@ -37,7 +42,7 @@ pub trait ScalarPow: Semiring {
     }
 }
 
-macro_rules! impl_one {
+macro_rules! impl_integer {
     ($($t: ty),*) => {
         $(
             impl Zero for $t {
@@ -63,14 +68,7 @@ macro_rules! impl_one {
         )*
     };
 }
-impl_one! {u64, i64, usize, isize}
-
-pub fn zero<T: Zero>() -> T {
-    T::zero()
-}
-pub fn one<T: One>() -> T {
-    T::one()
-}
+impl_integer! {u64, i64, usize, isize}
 
 trait_alias! {Semigroup = Add<Output = Self> + AddAssign + Sized + Clone}
 trait_alias! {Monoid = Semigroup + Zero}

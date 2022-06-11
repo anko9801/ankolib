@@ -1,9 +1,7 @@
-// mod field;
-// mod math;
-// mod rings;
 mod algebraic;
 mod graph;
 mod integer;
+mod math;
 mod util;
 
 // use crate::math::*;
