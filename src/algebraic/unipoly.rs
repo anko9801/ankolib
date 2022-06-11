@@ -270,7 +270,20 @@ impl<T: CRing> ScalarMul for FPS<T> {
         tmp
     }
 }
-impl<T: CRing> ScalarPow for FPS<T> {}
+impl<T: CRing> ScalarPow for FPS<T> {
+    fn pow(&self, mut e: usize) -> Self {
+        let mut result = Self::one();
+        let mut cur = self.clone();
+        while e > 0 {
+            if e & 1 == 1 {
+                result *= cur.clone();
+            }
+            e >>= 1;
+            cur *= cur.clone();
+        }
+        result
+    }
+}
 
 impl<T: CRing> Div for FPS<T> {
     type Output = Self;

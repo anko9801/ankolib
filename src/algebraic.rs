@@ -28,18 +28,7 @@ pub trait ScalarMul: Semigroup {
     fn scalar_mul(&self, e: usize) -> Self;
 }
 pub trait ScalarPow: Semiring {
-    fn pow(&self, mut e: usize) -> Self {
-        let mut result = Self::one();
-        let mut cur = self.clone();
-        while e > 0 {
-            if e & 1 == 1 {
-                result *= cur.clone();
-            }
-            e >>= 1;
-            cur *= cur.clone();
-        }
-        result
-    }
+    fn pow(&self, e: usize) -> Self;
 }
 
 macro_rules! impl_integer {
@@ -64,7 +53,20 @@ macro_rules! impl_integer {
                     *self * e as $t
                 }
             }
-            impl ScalarPow for $t {}
+            impl ScalarPow for $t {
+                fn pow(&self, mut e: usize) -> Self{
+                    let mut result = Self::one();
+                    let mut cur = self.clone();
+                    while e > 0 {
+                        if e & 1 == 1 {
+                            result *= cur;
+                        }
+                        e >>= 1;
+                        cur *= cur;
+                    }
+                    result
+                }
+            }
         )*
     };
 }
