@@ -18,7 +18,7 @@ pub struct Poly {
 }
 
 impl PartialEq for Base {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, rhs: &Self) -> bool {
         // for (var, power) in self.base {}
         true
     }
@@ -48,14 +48,14 @@ impl From<Var> for Poly {
 }
 
 impl AddAssign for Poly {
-    fn add_assign(&mut self, other: Self) {}
+    fn add_assign(&mut self, rhs: Self) {}
 }
 
 impl Add for Poly {
     type Output = Self;
-    fn add(self, other: Self) -> Self {
+    fn add(self, rhs: Self) -> Self {
         let mut tmp = self.clone();
-        tmp += other;
+        tmp += rhs;
         tmp
     }
 }

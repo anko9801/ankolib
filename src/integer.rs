@@ -36,10 +36,10 @@ pub struct Rational {
 }
 
 impl AddAssign<&Rational> for Rational {
-    fn add_assign(&mut self, other: &Self) {
-        let num = self.numerator.clone() * other.denominator.clone()
-            + other.numerator.clone() * self.denominator.clone();
-        let den = self.denominator.clone() * other.denominator.clone();
+    fn add_assign(&mut self, rhs: &Self) {
+        let num = self.numerator.clone() * rhs.denominator.clone()
+            + rhs.numerator.clone() * self.denominator.clone();
+        let den = self.denominator.clone() * rhs.denominator.clone();
         let g = gcd(&num, &den);
         self.numerator = num / g.clone();
         self.denominator = den / g.clone();
@@ -47,10 +47,10 @@ impl AddAssign<&Rational> for Rational {
 }
 
 impl SubAssign<&Rational> for Rational {
-    fn sub_assign(&mut self, other: &Self) {
-        let num = self.numerator.clone() * other.denominator.clone()
-            - other.numerator.clone() * self.denominator.clone();
-        let den = self.denominator.clone() * other.denominator.clone();
+    fn sub_assign(&mut self, rhs: &Self) {
+        let num = self.numerator.clone() * rhs.denominator.clone()
+            - rhs.numerator.clone() * self.denominator.clone();
+        let den = self.denominator.clone() * rhs.denominator.clone();
         let g = gcd(&num, &den);
         self.numerator = num / g.clone();
         self.denominator = den / g.clone();
@@ -58,51 +58,51 @@ impl SubAssign<&Rational> for Rational {
 }
 
 impl MulAssign<&Rational> for Rational {
-    fn mul_assign(&mut self, other: &Self) {
-        self.numerator = self.numerator.clone() * other.numerator.clone();
-        self.denominator = self.denominator.clone() * other.denominator.clone();
+    fn mul_assign(&mut self, rhs: &Self) {
+        self.numerator = self.numerator.clone() * rhs.numerator.clone();
+        self.denominator = self.denominator.clone() * rhs.denominator.clone();
     }
 }
 
 impl DivAssign<&Rational> for Rational {
-    fn div_assign(&mut self, other: &Self) {
-        self.numerator = self.numerator.clone() * other.numerator.clone();
-        self.denominator = self.denominator.clone() * other.denominator.clone();
+    fn div_assign(&mut self, rhs: &Self) {
+        self.numerator = self.numerator.clone() * rhs.numerator.clone();
+        self.denominator = self.denominator.clone() * rhs.denominator.clone();
     }
 }
 
 impl Add<&Rational> for Rational {
     type Output = Self;
-    fn add(self, other: &Self) -> Self {
+    fn add(self, rhs: &Self) -> Self {
         let mut tmp = self.clone();
-        tmp += &other;
+        tmp += &rhs;
         tmp
     }
 }
 
 impl Sub<&Rational> for Rational {
     type Output = Self;
-    fn sub(self, other: &Self) -> Self {
+    fn sub(self, rhs: &Self) -> Self {
         let mut tmp = self.clone();
-        tmp -= &other;
+        tmp -= &rhs;
         tmp
     }
 }
 
 impl Mul<&Rational> for Rational {
     type Output = Self;
-    fn mul(self, other: &Self) -> Self {
+    fn mul(self, rhs: &Self) -> Self {
         let mut tmp = self.clone();
-        tmp *= &other;
+        tmp *= &rhs;
         tmp
     }
 }
 
 impl Div<&Rational> for Rational {
     type Output = Self;
-    fn div(self, other: &Self) -> Self {
+    fn div(self, rhs: &Self) -> Self {
         let mut tmp = self.clone();
-        tmp /= &other;
+        tmp /= &rhs;
         tmp
     }
 }

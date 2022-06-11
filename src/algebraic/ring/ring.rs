@@ -51,23 +51,23 @@ macro_rules! impl_uint {
 impl_uint!(u8 u16 u32 u64 u128 usize);
 
 pub trait EuclidDomain {
-    fn gcd(self, other: Self) -> Self;
-    fn lcm(self, other: Self) -> Self;
+    fn gcd(self, rhs: Self) -> Self;
+    fn lcm(self, rhs: Self) -> Self;
 }
 
 macro_rules! impl_uint {
     ($t:ty) => {
         impl EuclidDomain for $t {
-            fn gcd(mut self, mut other: Self) -> Self {
-                while other > 0 {
-                    let tmp = self % other;
-                    self = mem::replace(&mut other, tmp);
+            fn gcd(mut self, mut rhs: Self) -> Self {
+                while rhs > 0 {
+                    let tmp = self % rhs;
+                    self = mem::replace(&mut rhs, tmp);
                 }
                 self
             }
 
-            fn lcm(self, other: Self) -> Self {
-                self / self.gcd(other) * other
+            fn lcm(self, rhs: Self) -> Self {
+                self / self.gcd(rhs) * rhs
             }
         }
     };
@@ -77,16 +77,16 @@ macro_rules! impl_uint {
 macro_rules! impl_int {
     ($t:ty) => {
         impl EuclidDomain for $t {
-            fn gcd(mut self, mut other: Self) -> Self {
-                while other != 0 {
-                    let tmp = self % other;
-                    self = mem::replace(&mut other, tmp);
+            fn gcd(mut self, mut rhs: Self) -> Self {
+                while rhs != 0 {
+                    let tmp = self % rhs;
+                    self = mem::replace(&mut rhs, tmp);
                 }
                 self.abs()
             }
 
-            fn lcm(self, other: Self) -> Self {
-                self / self.gcd(other) * other
+            fn lcm(self, rhs: Self) -> Self {
+                self / self.gcd(rhs) * rhs
             }
         }
     };
