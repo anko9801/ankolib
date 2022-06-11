@@ -1,9 +1,9 @@
 pub mod field;
+pub mod matrix;
 pub mod minmax;
 pub mod poly;
-pub mod tropical;
 // pub mod ring;
-pub mod matrix;
+pub mod tropical;
 pub mod unipoly;
 
 use std::marker::Sized;
@@ -13,8 +13,31 @@ pub trait Zero: Add<Output = Self> + Sized {
     fn zero() -> Self;
     fn is_zero(&self) -> bool;
 }
+pub trait One: Mul<Output = Self> + Sized {
+    fn one() -> Self;
+}
 
-macro_rules! impl_zero {
+// commutative
+pub trait ScalarMul: Semigroup {
+    fn scalar_mul(&self, e: usize) -> Self;
+}
+pub trait ScalarPow: Semiring {
+    fn pow(&self, mut e: usize) -> Self {
+        let mut result = Self::one();
+        let mut cur = self.clone();
+        let mut cur2 = self.clone();
+        while e > 0 {
+            if e & 1 == 1 {
+                result *= cur.clone();
+            }
+            e >>= 1;
+            cur *= cur.clone();
+        }
+        result
+    }
+}
+
+macro_rules! impl_one {
     ($($t: ty),*) => {
         $(
             impl Zero for $t {
@@ -25,14 +48,25 @@ macro_rules! impl_zero {
                     *self == 0
                 }
             }
+
+            impl One for $t {
+                fn one() -> Self {
+                    1
+                }
+            }
+
+            impl ScalarMul for $t {
+                fn scalar_mul(&self, e: usize) -> Self {
+                    *self * e as $t
+                }
+            }
+            impl ScalarPow for $t {
+                // fn pow(&self, e: usize) -> Self;
+            }
         )*
     };
 }
-impl_zero! {u64, i64, usize, isize}
-
-pub trait One: Mul<Output = Self> + Sized {
-    fn one() -> Self;
-}
+impl_one! {u64, i64, usize, isize}
 
 pub fn zero<T: Zero>() -> T {
     T::zero()
@@ -49,18 +83,21 @@ macro_rules! trait_alias {
     }
 }
 
-trait_alias! {Semigroup = Add<Output = Self> + Sized}
+// trait_alias! {ScalarMul = Mul<usize>}
+
+trait_alias! {Semigroup = Add<Output = Self> + AddAssign + Sized + Clone}
 trait_alias! {Monoid = Semigroup + Zero}
-trait_alias! {CommutativeSemigroup = Semigroup + AddAssign}
-trait_alias! {CommutativeMonoid = Monoid + AddAssign}
+trait_alias! {CommutativeSemigroup = Semigroup + ScalarMul}
+trait_alias! {CommutativeMonoid = Monoid + ScalarMul}
 trait_alias! {Group = Monoid + Neg<Output = Self>}
 trait_alias! {Abelian = Group + CommutativeMonoid + Sub<Output = Self> + SubAssign}
-trait_alias! {Semiring = CommutativeMonoid + Mul<Output = Self> + Sized + One}
-trait_alias! {CommutativeSemiring = Semiring + MulAssign}
+trait_alias! {Semiring = CommutativeMonoid + Mul<Output = Self> + MulAssign + Sized + One}
+trait_alias! {CommutativeSemiring = Semiring + ScalarPow}
 trait_alias! {Ring = Semiring + Abelian}
-trait_alias! {CommutativeRing = Ring + MulAssign}
+trait_alias! {CommutativeRing = Ring + ScalarPow}
 trait_alias! {Field = CommutativeRing + Div<Output = Self> + DivAssign}
 
+// これ演算が被っててよくない
 pub trait MapMonoid<S: Monoid, F: Monoid> {
     fn mapping(f: &F, x: &S) -> S;
 }

@@ -1,25 +1,41 @@
+use crate::algebraic::{CommutativeRing, One, ScalarMul, ScalarPow, Zero};
 use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::ops::{
-    Add, AddAssign, BitXor, BitXorAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Range,
+    Add, AddAssign, BitXor, BitXorAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg,
     RangeToInclusive, Rem, RemAssign, Sub, SubAssign,
 };
 
-#[derive(Debug, Clone)]
-pub struct FormalPowerSeries {
-    terms: Vec<isize>,
-}
-pub type FPS = FormalPowerSeries;
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct FormalPowerSeries<T: CommutativeRing + Clone + Eq>(Vec<T>);
 
-impl FPS {
+pub type FPS<T> = FormalPowerSeries<T>;
+
+impl<T: CommutativeRing + Clone + Eq> Zero for FPS<T> {
+    fn zero() -> Self {
+        FPS::from(vec![T::zero()])
+    }
+    fn is_zero(&self) -> bool {
+        *self == FPS::from(vec![T::zero()])
+    }
+}
+
+impl<T: CommutativeRing + Clone + Eq> One for FPS<T> {
+    fn one() -> Self {
+        FPS::from(vec![T::one()])
+    }
+}
+
+impl<T: CommutativeRing + Clone + Eq> FPS<T> {
     // コンストラクタ
-    pub fn term(coeff: isize, power: usize) -> FPS {
-        match (coeff, power) {
-            (0, _) => FPS::from(vec![0]),
+    pub fn term(coeff: T, power: usize) -> FPS<T> {
+        match (&coeff, power) {
+            (_, _) if coeff == T::zero() => FPS::from(vec![T::zero()]),
             (_, 0) => FPS::from(vec![coeff]),
             (_, _) => {
                 let mut poly = Vec::with_capacity(power);
                 for _ in 0..power {
-                    poly.push(0);
+                    poly.push(T::zero());
                 }
                 poly.push(coeff);
                 FPS::from(poly)
@@ -29,27 +45,27 @@ impl FPS {
 
     // 不定元 (indeterminate)
     #[inline]
-    pub fn x() -> FPS {
-        FPS::term(1, 1)
+    pub fn x() -> FPS<T> {
+        FPS::term(T::one(), 1)
     }
 
     // 多項式の係数 (昇冪)
     #[inline]
-    pub fn coeff(&self) -> Vec<isize> {
-        self.terms.clone()
+    pub fn coeff(&self) -> Vec<T> {
+        self.0.clone()
     }
 
     // 次数 (TODO: 0の次数を0ではなく負の無限大とする)
     #[inline]
     pub fn degree(&self) -> usize {
-        self.terms.len() - 1
+        self.0.len() - 1
     }
 
     // 最高次の係数
-    pub fn leading_coefficient(&self) -> isize {
+    pub fn leading_coefficient(&self) -> T {
         match self.degree() {
-            0 => 0,
-            deg => self[deg],
+            0 => T::zero(),
+            deg => self[deg].clone(),
         }
     }
 
@@ -76,90 +92,76 @@ impl FPS {
         todo!();
     }
 
-    pub fn diff(&self) -> Self {
-        let mut ret = FPS::from(vec![0; self.degree()]);
-        for i in 1..=self.degree() {
-            ret[i - 1] = self[i] * i as isize;
-        }
-        ret
-    }
+    // pub fn diff(&self) -> Self {
+    //     let mut ret = FPS::from(vec![T::zero(); self.degree()]);
+    //     for i in 1..=self.degree() {
+    //         ret[i - 1] = self[i] * i;
+    //     }
+    //     ret
+    // }
 
-    pub fn integral(&self) -> Self {
-        let mut ret = FPS::from(vec![0; self.degree() + 2]);
-        for i in 0..=self.degree() {
-            ret[i + 1] = self[i] / (i + 1) as isize;
-        }
-        ret
-    }
+    // pub fn integral(&self) -> Self {
+    //     let mut ret = FPS::from(vec![T::zero(); self.degree() + 2]);
+    //     for i in 0..=self.degree() {
+    //         ret[i + 1] = self[i] / (i + 1);
+    //     }
+    //     ret
+    // }
 
     fn reduction(&mut self) {
         for i in (0..=self.degree()).rev() {
-            if self[i] != 0 {
-                self.terms = self[..=i].to_vec();
+            if self[i] != T::zero() {
+                self.0 = self[..=i].to_vec();
                 return;
             }
         }
     }
 }
 
-impl AddAssign for FPS {
+impl<T: CommutativeRing + Clone + Eq> AddAssign for FPS<T> {
     fn add_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
-            self.terms.resize(other.degree() + 1, 0);
+            self.0.resize(other.degree() + 1, T::zero());
         }
         for i in 0..=other.degree() {
-            self[i] += other[i];
+            self[i] += other[i].clone();
         }
     }
 }
 
-impl SubAssign for FPS {
+impl<T: CommutativeRing + Clone + Eq> SubAssign for FPS<T> {
     fn sub_assign(&mut self, other: Self) {
         if self.degree() < other.degree() {
-            self.terms.resize(other.degree() + 1, 0);
+            self.0.resize(other.degree() + 1, T::zero());
         }
         for i in 0..=other.degree() {
-            self[i] -= other[i];
+            self[i] -= other[i].clone();
         }
     }
 }
 
-// TODO: conv multiply
-impl Mul for FPS {
-    type Output = Self;
-    fn mul(self, other: Self) -> Self {
-        let m = self.degree();
-        let n = other.degree();
-        let mut coeff = vec![0; m + n + 1];
-        for k in 0..m + n + 1 {
-            for i in 0..=k {
-                let j = k - i;
-                if i > m || j > n {
-                    continue;
-                }
-                coeff[k] += self[i] * other[j];
-            }
-        }
-        FPS::from(coeff)
+impl<T: CommutativeRing + Clone + Eq> MulAssign for FPS<T> {
+    fn mul_assign(&mut self, other: Self) {
+        *self = self.clone() * other;
     }
 }
 
-impl DivAssign for FPS {
+impl<T: CommutativeRing + Clone + Eq> DivAssign for FPS<T> {
     fn div_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
         if self.degree() < other.degree() {
-            *self = FPS::term(0, 0);
+            *self = FPS::term(T::zero(), 0);
             return;
         }
 
         // モニック
         let lc = other.leading_coefficient();
-        if lc != 1 {
+        if lc != T::one() {
             return;
         }
 
         let mut tmp = self.clone();
-        *self = FPS::term(0, 0);
+        *self = FPS::term(T::zero(), 0);
         for power in (0..deg).rev() {
             *self += FPS::term(tmp.leading_coefficient(), power);
             tmp -= FPS::term(tmp.leading_coefficient(), power) * other.clone();
@@ -167,17 +169,17 @@ impl DivAssign for FPS {
     }
 }
 
-impl RemAssign for FPS {
+impl<T: CommutativeRing + Clone + Eq> RemAssign for FPS<T> {
     fn rem_assign(&mut self, other: Self) {
         let deg = self.degree() - other.degree();
         if self.degree() < other.degree() {
-            *self = FPS::term(0, 0);
+            *self = FPS::term(T::zero(), 0);
             return;
         }
 
         // モニック
         let lc = other.leading_coefficient();
-        if lc != 1 {
+        if lc != T::one() {
             return;
         }
 
@@ -187,13 +189,13 @@ impl RemAssign for FPS {
     }
 }
 
-impl BitXorAssign<usize> for FPS {
+impl<T: CommutativeRing + Clone + Eq> BitXorAssign<usize> for FPS<T> {
     fn bitxor_assign(&mut self, other: usize) {
         // let size = self.degree() * other;
-        // self.terms.resize(size, 0);
+        // self.0.resize(size, 0);
         let mut tmp = self.clone();
         let mut bin = 1;
-        let mut ans = FPS::term(1, 0);
+        let mut ans = FPS::term(T::one(), 0);
         while bin <= other {
             if bin & other > 0 {
                 ans *= tmp.clone();
@@ -205,7 +207,7 @@ impl BitXorAssign<usize> for FPS {
     }
 }
 
-impl Add for FPS {
+impl<T: CommutativeRing + Clone + Eq> Add for FPS<T> {
     type Output = Self;
     fn add(self, other: Self) -> Self {
         let mut tmp = self.clone();
@@ -214,7 +216,18 @@ impl Add for FPS {
     }
 }
 
-impl Sub for FPS {
+impl<T: CommutativeRing + Clone + Eq> Neg for FPS<T> {
+    type Output = Self;
+    fn neg(self) -> Self {
+        let mut tmp = self.clone();
+        for i in 0..self.degree() {
+            tmp[i] = -self[i].clone();
+        }
+        tmp
+    }
+}
+
+impl<T: CommutativeRing + Clone + Eq> Sub for FPS<T> {
     type Output = Self;
     fn sub(self, other: Self) -> Self {
         let mut tmp = self.clone();
@@ -223,13 +236,48 @@ impl Sub for FPS {
     }
 }
 
-impl MulAssign for FPS {
-    fn mul_assign(&mut self, other: Self) {
-        *self = self.clone() * other;
+// TODO: conv multiply
+impl<T: CommutativeRing + Clone + Eq> Mul for FPS<T> {
+    type Output = Self;
+    fn mul(self, other: Self) -> Self {
+        let m = self.degree();
+        let n = other.degree();
+        let mut coeff = vec![T::zero(); m + n + 1];
+        for k in 0..m + n + 1 {
+            for i in 0..=k {
+                let j = k - i;
+                if i > m || j > n {
+                    continue;
+                }
+                coeff[k] += self[i].clone() * other[j].clone();
+            }
+        }
+        FPS::from(coeff)
     }
 }
 
-impl Div for FPS {
+// impl<T: CommutativeRing + Clone + Eq> Mul<usize> for FPS<T> {
+//     type Output = Self;
+//     fn mul(self, rhs: usize) -> Self {
+//         for i in 0..self.degree() {
+//             self[i] = self[i] * rhs;
+//         }
+//         self
+//     }
+// }
+
+impl<T: CommutativeRing + Clone + Eq> ScalarMul for FPS<T> {
+    fn scalar_mul(&self, rhs: usize) -> Self {
+        let mut tmp = self.clone();
+        for i in 0..self.degree() {
+            tmp[i] = self[i].scalar_mul(rhs);
+        }
+        tmp
+    }
+}
+impl<T: CommutativeRing + Clone + Eq> ScalarPow for FPS<T> {}
+
+impl<T: CommutativeRing + Clone + Eq> Div for FPS<T> {
     type Output = Self;
     fn div(self, other: Self) -> Self {
         let mut tmp = self.clone();
@@ -238,7 +286,7 @@ impl Div for FPS {
     }
 }
 
-impl Rem for FPS {
+impl<T: CommutativeRing + Clone + Eq> Rem for FPS<T> {
     type Output = Self;
     fn rem(self, other: Self) -> Self {
         let mut tmp = self.clone();
@@ -247,7 +295,7 @@ impl Rem for FPS {
     }
 }
 
-impl BitXor<usize> for FPS {
+impl<T: CommutativeRing + Clone + Eq> BitXor<usize> for FPS<T> {
     type Output = Self;
     fn bitxor(self, other: usize) -> Self {
         let mut tmp = self.clone();
@@ -256,29 +304,29 @@ impl BitXor<usize> for FPS {
     }
 }
 
-impl fmt::Display for FPS {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl<T: CommutativeRing + Clone + Eq + Display> Display for FPS<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         for i in (0..=self.degree()).rev() {
-            if i != self.degree() && self.terms[i] != 0 {
+            if i != self.degree() && self[i] != T::zero() {
                 write!(f, " + ")?;
             }
 
-            match (self.terms[i], i) {
-                (0, _) => (),
+            match (&self[i], i) {
+                (_, _) if self[i] == T::zero() => (),
                 (_, 0) => {
-                    write!(f, "{}", self.terms[i])?;
+                    write!(f, "{}", self[i])?;
                 }
-                (1, 1) => {
+                (_, 1) if self[i] == T::one() => {
                     write!(f, "x")?;
                 }
-                (1, _) => {
+                (_, _) if self[i] == T::one() => {
                     write!(f, "x^{}", i)?;
                 }
                 (_, 1) => {
-                    write!(f, "{}x", self.terms[i])?;
+                    write!(f, "{}x", self[i])?;
                 }
                 _ => {
-                    write!(f, "{}x^{}", self.terms[i], i)?;
+                    write!(f, "{}x^{}", self[i], i)?;
                 }
             }
         }
@@ -287,35 +335,35 @@ impl fmt::Display for FPS {
 }
 
 // 係数
-impl From<Vec<isize>> for FPS {
-    fn from(coeff: Vec<isize>) -> Self {
-        let mut poly = Self { terms: coeff };
+impl<T: CommutativeRing + Clone + Eq> From<Vec<T>> for FPS<T> {
+    fn from(coeff: Vec<T>) -> Self {
+        let mut poly = Self { 0: coeff };
         poly.reduction();
         poly
     }
 }
 
-impl Index<usize> for FPS {
-    type Output = isize;
+impl<T: CommutativeRing + Clone + Eq> Index<usize> for FPS<T> {
+    type Output = T;
 
     #[inline]
     fn index(&self, index: usize) -> &Self::Output {
-        &self.terms[index]
+        &self.0[index]
     }
 }
 
-impl Index<RangeToInclusive<usize>> for FPS {
-    type Output = [isize];
+impl<T: CommutativeRing + Clone + Eq> Index<RangeToInclusive<usize>> for FPS<T> {
+    type Output = [T];
 
     #[inline]
-    fn index(&self, index: RangeToInclusive<usize>) -> &[isize] {
-        &self.terms[index]
+    fn index(&self, index: RangeToInclusive<usize>) -> &Self::Output {
+        &self.0[index]
     }
 }
 
-impl IndexMut<usize> for FPS {
+impl<T: CommutativeRing + Clone + Eq> IndexMut<usize> for FPS<T> {
     #[inline]
-    fn index_mut(&mut self, index: usize) -> &mut isize {
-        &mut self.terms[index]
+    fn index_mut(&mut self, index: usize) -> &mut T {
+        &mut self.0[index]
     }
 }
