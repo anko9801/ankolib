@@ -2,6 +2,7 @@
 // mod math;
 // mod rings;
 mod algebraic;
+mod graph;
 mod integer;
 
 // use crate::math::*;

@@ -2,7 +2,7 @@ pub mod field;
 pub mod matrix;
 pub mod minmax;
 pub mod poly;
-// pub mod ring;
+pub mod ring;
 pub mod tropical;
 pub mod unipoly;
 
@@ -67,7 +67,6 @@ impl_one! {u64, i64, usize, isize}
 pub fn zero<T: Zero>() -> T {
     T::zero()
 }
-
 pub fn one<T: One>() -> T {
     T::one()
 }
@@ -81,13 +80,14 @@ macro_rules! trait_alias {
 
 trait_alias! {Semigroup = Add<Output = Self> + AddAssign + Sized + Clone}
 trait_alias! {Monoid = Semigroup + Zero}
+trait_alias! {Group = Monoid + Neg<Output = Self> + Sub<Output = Self> + SubAssign}
 trait_alias! {CommutativeSemigroup = Semigroup + ScalarMul}
 trait_alias! {CommutativeMonoid = Monoid + ScalarMul}
-trait_alias! {Group = Monoid + Neg<Output = Self>}
-trait_alias! {Abelian = Group + CommutativeMonoid + Sub<Output = Self> + SubAssign}
-trait_alias! {Semiring = CommutativeMonoid + Mul<Output = Self> + MulAssign + Sized + One}
+trait_alias! {Abelian = Group + ScalarMul}
+
+trait_alias! {Semiring = CommutativeMonoid + Mul<Output = Self> + MulAssign + One}
+trait_alias! {Ring = Abelian + Mul<Output = Self> + MulAssign + One}
 trait_alias! {CommutativeSemiring = Semiring + ScalarPow}
-trait_alias! {Ring = Semiring + Abelian}
 trait_alias! {CommutativeRing = Ring + ScalarPow}
 trait_alias! {Field = CommutativeRing + Div<Output = Self> + DivAssign}
 
