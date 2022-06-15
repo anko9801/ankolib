@@ -56,8 +56,8 @@ macro_rules! impl_integer {
             }
             impl ScalarPow for $t {
                 fn pow(&self, mut e: usize) -> Self{
-                    let mut result = Self::one();
-                    let mut cur = self.clone();
+                    let mut result = 1;
+                    let mut cur = *self;
                     while e > 0 {
                         if e & 1 == 1 {
                             result *= cur;

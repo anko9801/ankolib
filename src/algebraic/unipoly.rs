@@ -1,4 +1,4 @@
-use crate::algebraic::{one, zero, CommutativeRing, One, ScalarMul, ScalarPow, Zero};
+use crate::algebraic::{one, zero, CommutativeRing, Field, One, ScalarMul, ScalarPow, Zero};
 use crate::util::trait_alias;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -11,6 +11,7 @@ use std::ops::{
 pub struct FormalPowerSeries<T: CRing>(Vec<T>);
 pub type FPS<T> = FormalPowerSeries<T>;
 trait_alias! {CRing = CommutativeRing + Clone + Eq + Display}
+trait_alias! {Analysis = Field + From<usize> + Clone + Eq + Display}
 
 impl<T: CRing> FPS<T> {
     // コンストラクタ
@@ -82,22 +83,6 @@ impl<T: CRing> FPS<T> {
         todo!();
     }
 
-    // pub fn diff(&self) -> Self {
-    //     let mut ret = FPS::from(vec![zero(); self.degree()]);
-    //     for i in 1..=self.degree() {
-    //         ret[i - 1] = self[i] * i;
-    //     }
-    //     ret
-    // }
-
-    // pub fn integral(&self) -> Self {
-    //     let mut ret = FPS::from(vec![zero(); self.degree() + 2]);
-    //     for i in 0..=self.degree() {
-    //         ret[i + 1] = self[i] / (i + 1);
-    //     }
-    //     ret
-    // }
-
     fn reduction(&mut self) {
         for i in (0..=self.degree()).rev() {
             if self[i] != zero() {
@@ -105,6 +90,24 @@ impl<T: CRing> FPS<T> {
                 return;
             }
         }
+    }
+}
+
+impl<T: Analysis> FPS<T> {
+    pub fn diff(&self) -> Self {
+        let mut ret = FPS::from(vec![zero(); self.degree()]);
+        for i in 1..=self.degree() {
+            ret[i - 1] = self[i].clone() * i.into();
+        }
+        ret
+    }
+
+    pub fn integral(&self) -> Self {
+        let mut ret = FPS::from(vec![zero(); self.degree() + 2]);
+        for i in 0..=self.degree() {
+            ret[i + 1] = self[i].clone() / (i + 1).into();
+        }
+        ret
     }
 }
 
