@@ -1,4 +1,5 @@
-pub mod field;
+pub mod Fp;
+pub mod Zmod;
 pub mod matrix;
 pub mod minmax;
 pub mod poly;

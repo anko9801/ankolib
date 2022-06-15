@@ -1,4 +1,4 @@
-use crate::algebraic::ring::ring::*;
+use crate::algebraic::ring::*;
 
 pub trait CarmichaelLambda {
     fn carmichael_lambda(self) -> Self;
@@ -16,7 +16,7 @@ macro_rules! impl_uint {
                     _ => (1 << e2 - 2)
                 };
                 for (p, e) in (n >> e2).factors() {
-                    res = res.lcm(p.pow(e-1) * (p-1));
+                    res = EuclidDomain::lcm(res, p.pow(e-1) * (p-1));
                 }
                 res
             }

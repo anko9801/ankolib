@@ -1,151 +1,162 @@
-use crate::integer::Integer;
+use crate::algebraic::ring::EuclidDomain;
+use crate::algebraic::{One, ScalarMul, ScalarPow, Zero};
+use std::fmt::{Display, Formatter};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
+type ZmodInt = i64;
+
+#[derive(Copy, Clone)]
 pub struct Zmod {
-    MOD: usize,
-}
-
-impl Clone for Zmod {
-    fn clone(&self) -> Self {
-        Self { MOD: self.MOD }
-    }
-}
-impl Copy for Zmod {}
-
-pub trait Elem<T> {
-    fn elem(&self, elem: T) -> ZmodInt;
+    num: ZmodInt,
+    MOD: ZmodInt,
 }
 
 macro_rules! impl_integer {
     ($t:ty) => {
         impl From<$t> for Zmod {
             fn from(v: $t) -> Self {
-                Self{MOD: v as usize}
-            }
-        }
-
-        impl Elem<$t> for Zmod {
-            fn elem(&self, elem: $t) -> ZmodInt {
-                ZmodInt {
-                    elem: elem as Integer,
-                    ring: *self,
-                }
+                Self { num: v as i64, MOD: 0 }
             }
         }
     };
     ( $($t:ty)* ) => { $(impl_integer!($t);)* };
 }
-
 impl_integer!(u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize);
 
-// TODO: Integer / Rational struct
-pub struct ZmodInt {
-    elem: Integer,
-    ring: Zmod,
-}
-
-impl Clone for ZmodInt {
-    fn clone(&self) -> Self {
-        Self {
-            elem: self.elem,
-            ring: self.ring,
+impl Zmod {
+    fn check_mod(&self, rhs: Self) -> ZmodInt {
+        match (self.MOD, rhs.MOD) {
+            (0, 0) => ZmodInt::MAX,
+            (0, _) => rhs.MOD,
+            (_, 0) => self.MOD,
+            (_, _) if self.MOD == rhs.MOD => self.MOD,
+            (_, _) => panic!("MOD is not matched"),
         }
     }
 }
-impl Copy for ZmodInt {}
 
-macro_rules! impl_integer {
-    ($t:ty) => {
-        impl std::ops::AddAssign<$t> for ZmodInt {
-            fn add_assign(&mut self, rhs: $t) {
-                let MOD = self.ring.MOD as $t;
-                if rhs < 0 || MOD <= rhs {
-                    rhs %= MOD;
-                }
-
-                self.elem += rhs;
-                if self.elem >= MOD {
-                    self.elem -= MOD;
-                }
-            }
-        }
-
-        // impl<T: ToInternalNum> std::ops::Add<T> for ModInt {
-        //     type Output = ModInt;
-        //     fn add(self, rhs: T) -> Self::Output {
-        //         let mut res = self;
-        //         res += rhs;
-        //         res
-        //     }
-        // }
-        // impl<T: ToInternalNum> std::ops::SubAssign<T> for ModInt {
-        //     fn sub_assign(&mut self, rhs: T) {
-        //         let mut rhs = rhs.to_internal_num();
-        //         let m = modulo();
-        //         if rhs >= m {
-        //             rhs %= m;
-        //         }
-        //         if rhs > 0 {
-        //             self.0 += m - rhs;
-        //         }
-        //         if self.0 >= m {
-        //             self.0 -= m;
-        //         }
-        //     }
-        // }
-        // impl<T: ToInternalNum> std::ops::Sub<T> for ModInt {
-        //     type Output = Self;
-        //     fn sub(self, rhs: T) -> Self::Output {
-        //         let mut res = self;
-        //         res -= rhs;
-        //         res
-        //     }
-        // }
-        // impl<T: ToInternalNum> std::ops::MulAssign<T> for ModInt {
-        //     fn mul_assign(&mut self, rhs: T) {
-        //         let mut rhs = rhs.to_internal_num();
-        //         let m = modulo();
-        //         if rhs >= m {
-        //             rhs %= m;
-        //         }
-        //         self.0 *= rhs;
-        //         self.0 %= m;
-        //     }
-        // }
-        // impl<T: ToInternalNum> std::ops::Mul<T> for ModInt {
-        //     type Output = Self;
-        //     fn mul(self, rhs: T) -> Self::Output {
-        //         let mut res = self;
-        //         res *= rhs;
-        //         res
-        //     }
-        // }
-
-        // impl<T: ToInternalNum> std::ops::DivAssign<T> for ModInt {
-        //     fn div_assign(&mut self, rhs: T) {
-        //         let mut rhs = rhs.to_internal_num();
-        //         let m = modulo();
-        //         if rhs >= m {
-        //             rhs %= m;
-        //         }
-        //         let inv = Self(rhs).internal_pow(m - 2);
-        //         self.0 *= inv.value();
-        //         self.0 %= m;
-        //     }
-        // }
-
-        // impl<T: ToInternalNum> std::ops::Div<T> for ModInt {
-        //     type Output = Self;
-        //     fn div(self, rhs: T) -> Self::Output {
-        //         let mut res = self;
-        //         res /= rhs;
-        //         res
-        //     }
-        // }
-    };
-    ( $($t:ty)* ) => { $(impl_integer!($t);)* };
+impl Zero for Zmod {
+    fn zero() -> Self {
+        Self { num: 0, MOD: 0 }
+    }
+    fn is_zero(&self) -> bool {
+        self.num == 0
+    }
 }
 
-impl_integer!(u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize);
+impl One for Zmod {
+    fn one() -> Self {
+        Self { num: 1, MOD: 0 }
+    }
+}
+
+impl AddAssign for Zmod {
+    fn add_assign(&mut self, rhs: Self) {
+        let pmod = self.check_mod(rhs);
+        self.num += rhs.num;
+        if self.num >= pmod {
+            self.num -= pmod;
+        }
+    }
+}
+
+impl SubAssign for Zmod {
+    fn sub_assign(&mut self, rhs: Self) {
+        let pmod = self.check_mod(rhs);
+        self.num -= rhs.num;
+        if self.num < 0 {
+            self.num += pmod;
+        }
+    }
+}
+
+impl MulAssign for Zmod {
+    fn mul_assign(&mut self, rhs: Self) {
+        let pmod = self.check_mod(rhs);
+        self.num *= rhs.num;
+        self.num %= pmod;
+    }
+}
+
+impl DivAssign for Zmod {
+    fn div_assign(&mut self, rhs: Self) {
+        let pmod = self.check_mod(rhs);
+        let (mut x, mut y) = (0, 0);
+        EuclidDomain::xgcd(rhs.num, pmod, &mut x, &mut y);
+    }
+}
+
+impl Add for Zmod {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self {
+        let mut tmp = self.clone();
+        tmp += rhs;
+        tmp
+    }
+}
+
+impl Neg for Zmod {
+    type Output = Self;
+    fn neg(self) -> Self {
+        let mut tmp = self.clone();
+        tmp.num = -self.num + self.MOD;
+        tmp
+    }
+}
+
+impl Sub for Zmod {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self {
+        let mut tmp = self.clone();
+        tmp -= rhs;
+        tmp
+    }
+}
+
+impl Mul for Zmod {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self {
+        let mut tmp = self.clone();
+        tmp *= rhs;
+        tmp
+    }
+}
+
+impl Div for Zmod {
+    type Output = Self;
+    fn div(self, rhs: Self) -> Self {
+        let mut tmp = self.clone();
+        tmp /= rhs;
+        tmp
+    }
+}
+
+impl ScalarMul for Zmod {
+    fn scalar_mul(&self, rhs: usize) -> Self {
+        *self * rhs.into()
+    }
+}
+
+impl ScalarPow for Zmod {
+    fn pow(&self, mut e: usize) -> Self {
+        let mut result = Self::one();
+        let mut cur = self.clone();
+        while e > 0 {
+            if e & 1 == 1 {
+                result *= cur;
+            }
+            e >>= 1;
+            cur *= cur;
+        }
+        result
+    }
+}
+
+impl Display for Zmod {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} mod {}", self.num, self.MOD)
+    }
+}
 
 pub mod mod_int {
     type ModInternalNum = i64;
