@@ -57,7 +57,6 @@ pub trait EuclidDomain {
     fn xgcd(lhs: Self, rhs: Self, x: &mut Self, y: &mut Self) -> Self;
     fn lcm(lhs: Self, rhs: Self) -> Self;
 }
-trait_alias! {ED = EuclidDomain}
 
 macro_rules! impl_integer {
     ($t:ty) => {

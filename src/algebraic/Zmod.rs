@@ -33,6 +33,9 @@ impl Zmod {
     fn num(&self, num: ZmodInt) -> Self {
         Self { num, MOD: self.MOD }
     }
+    fn value(&self) -> ZmodInt {
+        self.num
+    }
 
     fn check_mod(&self, rhs: Self) -> ZmodInt {
         match (self.MOD, rhs.MOD) {
@@ -91,8 +94,9 @@ impl MulAssign for Zmod {
 impl DivAssign for Zmod {
     fn div_assign(&mut self, rhs: Self) {
         let pmod = self.check_mod(rhs);
-        let (mut x, mut y) = (0, 0);
+        let (mut x, mut y) = (1, 0);
         EuclidDomain::xgcd(rhs.num, pmod, &mut x, &mut y);
+        self.num = (self.num * x) % pmod;
     }
 }
 
