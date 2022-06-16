@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 pub mod Fp;
 pub mod Zmod;
 pub mod matrix;
@@ -33,7 +34,7 @@ pub trait ScalarPow: Semiring {
 }
 
 macro_rules! impl_integer {
-    ($($t: ty),*) => {
+    ($($t: ty)*) => {
         $(
             impl Zero for $t {
                 fn zero() -> Self {
@@ -71,9 +72,9 @@ macro_rules! impl_integer {
         )*
     };
 }
-impl_integer! {u64, i64, usize, isize}
+impl_integer! {u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize}
 
-trait_alias! {Semigroup = Add<Output = Self> + AddAssign + Sized + Clone}
+trait_alias! {Semigroup = Add<Output = Self> + AddAssign + Sized}
 trait_alias! {Monoid = Semigroup + Zero}
 trait_alias! {Group = Monoid + Neg<Output = Self> + Sub<Output = Self> + SubAssign}
 trait_alias! {CommutativeSemigroup = Semigroup + ScalarMul}
