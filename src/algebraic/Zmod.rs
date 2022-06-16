@@ -21,9 +21,19 @@ macro_rules! impl_integer {
     };
     ( $($t:ty)* ) => { $(impl_integer!($t);)* };
 }
-impl_integer!(u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize);
+impl_integer! {u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize}
 
 impl Zmod {
+    fn new(num: ZmodInt, MOD: ZmodInt) -> Self {
+        Self { num, MOD }
+    }
+    fn modint(MOD: ZmodInt) -> Self {
+        Self { num: 0, MOD }
+    }
+    fn num(&self, num: ZmodInt) -> Self {
+        Self { num, MOD: self.MOD }
+    }
+
     fn check_mod(&self, rhs: Self) -> ZmodInt {
         match (self.MOD, rhs.MOD) {
             (0, 0) => ZmodInt::MAX,
