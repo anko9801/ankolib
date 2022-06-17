@@ -68,7 +68,7 @@ macro_rules! impl_integer {
                 }
                 lhs
             }
-            fn xgcd(mut lhs: Self, mut rhs: Self, x: &mut Self, y: &mut Self) -> Self {
+            fn xgcd(lhs: Self, rhs: Self, x: &mut Self, y: &mut Self) -> Self {
                 if rhs != 0 {
                     let d = Self::xgcd(rhs, lhs % rhs, y, x);
                     *y -= (lhs / rhs) * *x;
