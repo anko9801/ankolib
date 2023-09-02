@@ -1,4 +1,4 @@
-mod point;
+mod geometric_real;
 mod shapes;
 
 use std::fmt;
@@ -9,7 +9,6 @@ pub struct GeometricReal(Real);
 
 const EPS: Real = 1e-9;
 const PI: Real = 3.1415926535897932;
-
 pub fn radian_to_degree(r: Real) -> Real {
     r * 180.0 / PI
 }
@@ -24,13 +23,13 @@ pub struct Point {
 }
 #[derive(Debug, Clone, Copy)]
 struct Line {
-    a: Point,
-    b: Point,
+    from: Point,
+    to: Point,
 }
 #[derive(Debug)]
 struct Segment {
-    a: Point,
-    b: Point,
+    from: Point,
+    to: Point,
 }
 #[derive(Debug, Clone, Copy)]
 pub struct Circle {
@@ -46,13 +45,13 @@ impl fmt::Display for Point {
 
 impl fmt::Display for Line {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} to {}", self.a, self.b)
+        write!(f, "{} to {}", self.from, self.to)
     }
 }
 
 impl fmt::Display for Segment {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} to {}", self.a, self.b)
+        write!(f, "{} to {}", self.from, self.to)
     }
 }
 
@@ -62,8 +61,8 @@ impl fmt::Display for Circle {
     }
 }
 
-// using Points = vector<Point>;
-// using Polygon = vector<Point>;
-// using Segments = vector<Segment>;
-// using Lines = vector<Line>;
-// using Circles = vector<Circle>;
+type Points = Vec<Point>;
+type Polygon = Vec<Point>;
+type Segments = Vec<Segment>;
+type Lines = Vec<Line>;
+type Circles = Vec<Circle>;

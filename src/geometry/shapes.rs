@@ -81,41 +81,41 @@ impl ops::Mul<GeometricReal> for Point {
 
 impl Line {
     pub fn new(a: Point, b: Point) -> Self {
-        Self { a, b }
+        Self { from: a, to: b }
     }
 
     // ax + by = c
     pub fn from_coeff(a: GeometricReal, b: GeometricReal, c: GeometricReal) -> Self {
         if a == 0.0.into() {
             Line {
-                a: Point::new(0.0.into(), c / b),
-                b: Point::new(1.0.into(), c / b),
+                from: Point::new(0.0.into(), c / b),
+                to: Point::new(1.0.into(), c / b),
             }
         } else if b == 0.0.into() {
             Line {
-                a: Point::new(c / a, 0.0.into()),
-                b: Point::new(c / a, 1.0.into()),
+                from: Point::new(c / a, 0.0.into()),
+                to: Point::new(c / a, 1.0.into()),
             }
         } else {
             Line {
-                a: Point::new(0.0.into(), c / b),
-                b: Point::new(c / a, 0.0.into()),
+                from: Point::new(0.0.into(), c / b),
+                to: Point::new(c / a, 0.0.into()),
             }
         }
     }
 
     pub fn parallel(&self, a: Line) -> bool {
-        (self.b - self.a).cross(a.b - a.a) == 0.0.into()
+        (self.to - self.from).cross(a.to - a.from) == 0.0.into()
     }
     pub fn orthogonal(&self, a: Line) -> bool {
-        (self.b - self.a).dot(a.b - a.a) == 0.0.into()
+        (self.to - self.from).dot(a.to - a.from) == 0.0.into()
     }
 
     // 射影(projection)
     // 直線(線分)lに点pから引いた垂線の足を求める
     pub fn projection(&self, p: Point) -> Point {
-        let t = (p - self.a).dot(self.a - self.b) / (self.a - self.b).norm();
-        self.a + (self.a - self.b) * t
+        let t = (p - self.from).dot(self.from - self.to) / (self.from - self.to).norm();
+        self.from + (self.from - self.to) * t
     }
 
     // 反射(reflection)
@@ -127,27 +127,26 @@ impl Line {
 
 impl Segment {
     pub fn new(a: Point, b: Point) -> Self {
-        Segment { a, b }
+        Segment { from: a, to: b }
     }
 
     pub fn projection(&self, p: Point) -> Point {
-        let t = (p - self.a).dot(self.a - self.b) / (self.a - self.b).norm();
-        self.a + (self.a - self.b) * t
+        let t = (p - self.from).dot(self.from - self.to) / (self.from - self.to).norm();
+        self.from + (self.from - self.to) * t
     }
     // 線分sと線分tが交差しているかどうか
-    pub fn isIntersect(&self, s: Segment) -> bool {
-        ccw(s.a, s.b, self.a) * ccw(s.a, s.b, self.b) <= 0
-            && ccw(self.a, self.b, s.a) * ccw(self.a, self.b, s.b) <= 0
+    pub fn is_intersect(&self, s: Segment) -> bool {
+        ccw(self.from, self.to, s.from) * ccw(self.from, self.to, s.to) <= 0
+            && ccw(s.from, s.to, self.from) * ccw(s.from, s.to, self.to) <= 0
     }
 }
-//   friend istream &operator>>(istream &is, Line &a) { return is >> a.a >> a.b; }
 
 impl Circle {
     pub fn new(p: Point, r: GeometricReal) -> Self {
         Circle { p, r }
     }
 
-    pub fn isIntersect(&self, c: Circle) -> usize {
+    pub fn is_intersect(&self, c: Circle) -> usize {
         let d = (self.p - c.p).norm();
         // 2つの円が離れている場合
         if d > (self.r + c.r) {
