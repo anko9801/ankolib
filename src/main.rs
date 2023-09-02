@@ -8,7 +8,7 @@ use num::Integer;
 // use crate::math::*;
 // use crate::rings::integer_mod_ring::*;
 // use crate::rings::ring::*;
-use crate::algebraic::{integer::Int, unipoly::FPS};
+use crate::algebraic::{integer::Int, polynomial::FPS};
 
 fn main() {
     // let R = Zmod::from(20);

@@ -4,10 +4,9 @@ pub mod Zmod;
 pub mod integer;
 pub mod matrix;
 pub mod minmax;
-pub mod poly;
+pub mod polynomial;
 pub mod ring;
 pub mod tropical;
-pub mod unipoly;
 
 use crate::util::trait_alias;
 use num::{One, Zero};
