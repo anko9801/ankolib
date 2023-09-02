@@ -50,6 +50,12 @@ impl fmt::Display for Line {
     }
 }
 
+impl fmt::Display for Segment {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} to {}", self.a, self.b)
+    }
+}
+
 impl fmt::Display for Circle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "from {} radius {}", self.p, self.r)
