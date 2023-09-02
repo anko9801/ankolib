@@ -8,23 +8,25 @@ use std::ops::{
 };
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct FormalPowerSeries<T: CRing>(Vec<T>);
-pub type FPS<T> = FormalPowerSeries<T>;
-trait_alias! {CRing = CommutativeRing + Clone + Eq + Display}
-trait_alias! {Analysis = Field + From<usize> + Clone + Eq + Display}
+pub struct FPS<T: CRing>(Vec<T>);
+trait_alias! {CRing = CommutativeRing + Clone + Copy + Eq + Display}
+trait_alias! {Analysis = Field + From<usize> + Clone + Copy + Eq + Display}
 
 impl<T: CRing> FPS<T> {
     pub fn term(coeff: T, power: usize) -> FPS<T> {
         match (&coeff, power) {
-            (_, _) if coeff == T::zero() => FPS::from(vec![T::zero()]),
             (_, 0) => FPS::from(vec![coeff]),
             (_, _) => {
-                let mut poly = Vec::with_capacity(power);
-                for _ in 0..power {
-                    poly.push(T::zero());
+                if coeff == T::zero() {
+                    FPS::from(vec![T::zero()])
+                } else {
+                    let mut poly = Vec::with_capacity(power);
+                    for _ in 0..power {
+                        poly.push(T::zero());
+                    }
+                    poly.push(coeff);
+                    FPS::from(poly)
                 }
-                poly.push(coeff);
-                FPS::from(poly)
             }
         }
     }
@@ -61,12 +63,12 @@ impl<T: CRing> FPS<T> {
     }
 
     // 代入
-    pub fn dubs(&self, x: isize) -> isize {
-        todo!();
-    }
-
-    pub fn log(&self) {
-        todo!();
+    pub fn dubs(&self, x: T) -> T {
+        let mut sum = T::zero();
+        for (i, coeff) in self.0.iter().enumerate() {
+            sum += *coeff * x.scalar_pow(i);
+        }
+        sum
     }
 
     pub fn pseudo_div(&self, rhs: Self) {
@@ -77,7 +79,6 @@ impl<T: CRing> FPS<T> {
         todo!();
     }
 
-    // TODO: Half GCD
     pub fn gcd(&self, rhs: Self) -> Self {
         todo!();
     }
@@ -198,8 +199,6 @@ impl<T: CRing> RemAssign for FPS<T> {
 
 impl<T: CRing> BitXorAssign<usize> for FPS<T> {
     fn bitxor_assign(&mut self, rhs: usize) {
-        // let size = self.degree() * rhs;
-        // self.0.resize(size, 0);
         let mut tmp = self.clone();
         let mut bin = 1;
         let mut ans = FPS::term(T::one(), 0);
