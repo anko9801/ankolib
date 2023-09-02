@@ -80,6 +80,3 @@ impl Point {
 //         write!(f, "{}", self.0)
 //     }
 // }
-
-#[test]
-fn is() {}

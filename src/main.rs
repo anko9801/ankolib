@@ -1,12 +1,14 @@
-mod algebraic;
+pub mod algebraic;
 mod geometry;
 mod graph;
 mod util;
 
+use num::Integer;
+
 // use crate::math::*;
 // use crate::rings::integer_mod_ring::*;
 // use crate::rings::ring::*;
-use crate::algebraic::{integer, unipoly::FPS};
+use crate::algebraic::{integer::Int, unipoly::FPS};
 
 fn main() {
     // let R = Zmod::from(20);
@@ -23,5 +25,7 @@ fn main() {
     let f: FPS<isize> =
         FPS::term(5, 3) + ((FPS::term(1, 3) + FPS::term(3, 0)) ^ 2) + FPS::term(3, 1);
     println!("{}", f);
-    println!("{}", integer::gcd(&15.into(), &303.into()));
+    let a: Int = 15.into();
+    let b: Int = 303.into();
+    println!("{}", a.gcd(&b));
 }

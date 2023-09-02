@@ -1,4 +1,4 @@
-use crate::algebraic::{one, zero, CommutativeRing, Field, One, ScalarMul, ScalarPow, Zero};
+use crate::algebraic::{CommutativeRing, Field, One, ScalarMul, ScalarPow, Zero};
 use crate::util::trait_alias;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -17,12 +17,12 @@ impl<T: CRing> FPS<T> {
     // コンストラクタ
     pub fn term(coeff: T, power: usize) -> FPS<T> {
         match (&coeff, power) {
-            (_, _) if coeff == zero() => FPS::from(vec![zero()]),
+            (_, _) if coeff == T::zero() => FPS::from(vec![T::zero()]),
             (_, 0) => FPS::from(vec![coeff]),
             (_, _) => {
                 let mut poly = Vec::with_capacity(power);
                 for _ in 0..power {
-                    poly.push(zero());
+                    poly.push(T::zero());
                 }
                 poly.push(coeff);
                 FPS::from(poly)
@@ -33,7 +33,7 @@ impl<T: CRing> FPS<T> {
     // 不定元 (indeterminate)
     #[inline]
     pub fn x() -> FPS<T> {
-        FPS::term(one(), 1)
+        FPS::term(T::one(), 1)
     }
 
     // 多項式の係数 (昇冪)
@@ -51,7 +51,7 @@ impl<T: CRing> FPS<T> {
     // 最高次の係数
     pub fn leading_coefficient(&self) -> T {
         match self.degree() {
-            0 => zero(),
+            0 => T::zero(),
             deg => self[deg].clone(),
         }
     }
@@ -85,7 +85,7 @@ impl<T: CRing> FPS<T> {
 
     fn reduction(&mut self) {
         for i in (0..=self.degree()).rev() {
-            if self[i] != zero() {
+            if self[i] != T::zero() {
                 self.0 = self[..=i].to_vec();
                 return;
             }
@@ -95,7 +95,7 @@ impl<T: CRing> FPS<T> {
 
 impl<T: Analysis> FPS<T> {
     pub fn diff(&self) -> Self {
-        let mut ret = FPS::from(vec![zero(); self.degree()]);
+        let mut ret = FPS::from(vec![T::zero(); self.degree()]);
         for i in 1..=self.degree() {
             ret[i - 1] = self[i].clone() * i.into();
         }
@@ -103,7 +103,7 @@ impl<T: Analysis> FPS<T> {
     }
 
     pub fn integral(&self) -> Self {
-        let mut ret = FPS::from(vec![zero(); self.degree() + 2]);
+        let mut ret = FPS::from(vec![T::zero(); self.degree() + 2]);
         for i in 0..=self.degree() {
             ret[i + 1] = self[i].clone() / (i + 1).into();
         }
@@ -113,23 +113,23 @@ impl<T: Analysis> FPS<T> {
 
 impl<T: CRing> Zero for FPS<T> {
     fn zero() -> Self {
-        FPS::from(vec![zero()])
+        FPS::from(vec![T::zero()])
     }
     fn is_zero(&self) -> bool {
-        *self == FPS::from(vec![zero()])
+        *self == FPS::from(vec![T::zero()])
     }
 }
 
 impl<T: CRing> One for FPS<T> {
     fn one() -> Self {
-        FPS::from(vec![one()])
+        FPS::from(vec![T::one()])
     }
 }
 
 impl<T: CRing> AddAssign for FPS<T> {
     fn add_assign(&mut self, rhs: Self) {
         if self.degree() < rhs.degree() {
-            self.0.resize(rhs.degree() + 1, zero());
+            self.0.resize(rhs.degree() + 1, T::zero());
         }
         for i in 0..=rhs.degree() {
             self[i] += rhs[i].clone();
@@ -140,7 +140,7 @@ impl<T: CRing> AddAssign for FPS<T> {
 impl<T: CRing> SubAssign for FPS<T> {
     fn sub_assign(&mut self, rhs: Self) {
         if self.degree() < rhs.degree() {
-            self.0.resize(rhs.degree() + 1, zero());
+            self.0.resize(rhs.degree() + 1, T::zero());
         }
         for i in 0..=rhs.degree() {
             self[i] -= rhs[i].clone();
@@ -158,18 +158,18 @@ impl<T: CRing> DivAssign for FPS<T> {
     fn div_assign(&mut self, rhs: Self) {
         let deg = self.degree() - rhs.degree();
         if self.degree() < rhs.degree() {
-            *self = FPS::term(zero(), 0);
+            *self = FPS::term(T::zero(), 0);
             return;
         }
 
         // モニック
         let lc = rhs.leading_coefficient();
-        if lc != one() {
+        if lc != T::one() {
             return;
         }
 
         let mut tmp = self.clone();
-        *self = FPS::term(zero(), 0);
+        *self = FPS::term(T::zero(), 0);
         for power in (0..deg).rev() {
             *self += FPS::term(tmp.leading_coefficient(), power);
             tmp -= FPS::term(tmp.leading_coefficient(), power) * rhs.clone();
@@ -181,13 +181,13 @@ impl<T: CRing> RemAssign for FPS<T> {
     fn rem_assign(&mut self, rhs: Self) {
         let deg = self.degree() - rhs.degree();
         if self.degree() < rhs.degree() {
-            *self = FPS::term(zero(), 0);
+            *self = FPS::term(T::zero(), 0);
             return;
         }
 
         // モニック
         let lc = rhs.leading_coefficient();
-        if lc != one() {
+        if lc != T::one() {
             return;
         }
 
@@ -203,7 +203,7 @@ impl<T: CRing> BitXorAssign<usize> for FPS<T> {
         // self.0.resize(size, 0);
         let mut tmp = self.clone();
         let mut bin = 1;
-        let mut ans = FPS::term(one(), 0);
+        let mut ans = FPS::term(T::one(), 0);
         while bin <= rhs {
             if bin & rhs > 0 {
                 ans *= tmp.clone();
@@ -250,7 +250,7 @@ impl<T: CRing> Mul for FPS<T> {
     fn mul(self, rhs: Self) -> Self {
         let m = self.degree();
         let n = rhs.degree();
-        let mut coeff = vec![zero(); m + n + 1];
+        let mut coeff = vec![T::zero(); m + n + 1];
         for k in 0..m + n + 1 {
             for i in 0..=k {
                 let j = k - i;
@@ -318,19 +318,19 @@ impl<T: CRing> BitXor<usize> for FPS<T> {
 impl<T: CRing> Display for FPS<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         for i in (0..=self.degree()).rev() {
-            if i != self.degree() && self[i] != zero() {
+            if i != self.degree() && self[i] != T::zero() {
                 write!(f, " + ")?;
             }
 
             match (&self[i], i) {
-                (_, _) if self[i] == zero() => (),
+                (_, _) if self[i] == T::zero() => (),
                 (_, 0) => {
                     write!(f, "{}", self[i])?;
                 }
-                (_, 1) if self[i] == one() => {
+                (_, 1) if self[i] == T::one() => {
                     write!(f, "x")?;
                 }
-                (_, _) if self[i] == one() => {
+                (_, _) if self[i] == T::one() => {
                     write!(f, "x^{}", i)?;
                 }
                 (_, 1) => {

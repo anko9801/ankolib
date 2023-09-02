@@ -1,4 +1,4 @@
-use super::{Circle, Line, Point, Real};
+use super::{Circle, Line, Point, Real, Segment};
 
 impl Line {
     pub fn new(a: Point, b: Point) -> Self {
@@ -35,8 +35,6 @@ impl Line {
     // }
 }
 
-#[derive(Debug)]
-struct Segment(Line);
 impl Segment {
     pub fn new(a: Point, b: Point) -> Self {
         Segment(Line { a, b })

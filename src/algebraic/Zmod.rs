@@ -1,3 +1,5 @@
+use num::{Num, NumCast};
+
 use crate::algebraic::ring::EuclidDomain;
 use crate::algebraic::{One, ScalarMul, ScalarPow, Zero};
 use std::fmt::{Display, Formatter};
@@ -11,18 +13,14 @@ pub struct Zmod {
     MOD: ZmodInt,
 }
 
-macro_rules! impl_integer {
-    ($t:ty) => {
-        impl From<$t> for Zmod {
-            fn from(v: $t) -> Self {
-                Self { num: v as i64, MOD: 0 }
-            }
+impl<T: Num + NumCast> From<T> for Zmod {
+    fn from(value: T) -> Self {
+        Self {
+            num: value.to_i64().unwrap(),
+            MOD: 0,
         }
-    };
-    ( $($t:ty)* ) => { $(impl_integer!($t);)* };
+    }
 }
-impl_integer! {u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize}
-
 impl Zmod {
     fn new(num: ZmodInt, MOD: ZmodInt) -> Self {
         Self { num, MOD }
