@@ -1,13 +1,12 @@
 mod algebraic;
+mod geometry;
 mod graph;
-mod integer;
-mod math;
 mod util;
 
 // use crate::math::*;
 // use crate::rings::integer_mod_ring::*;
 // use crate::rings::ring::*;
-use crate::algebraic::unipoly::FPS;
+use crate::algebraic::{integer, unipoly::FPS};
 
 fn main() {
     // let R = Zmod::from(20);

@@ -1,5 +1,7 @@
 # ankolib
 
+パフォーマンスより抽象度や機能を重視する。
+
 ## Roadmap
 
 - [ ] Mathematical Structures
@@ -13,9 +15,9 @@
   - [x] Integers and Rational Numbers
     - [x] Integer
     - [x] Rational number
-  - [ ] Real and Complex Numbers
-    - [ ] Real number
-    - [ ] Complex
+  - [x] Real and Complex Numbers
+    - [x] Real number
+    - [x] Complex
   - [ ] Commutative Polynomials
     - [ ] Univariate Polynomial Ring
       - [ ] Half GCD

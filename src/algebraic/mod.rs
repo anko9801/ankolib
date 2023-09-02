@@ -1,6 +1,8 @@
 #![allow(non_snake_case)]
 pub mod Fp;
 pub mod Zmod;
+pub mod integer;
+pub mod math;
 pub mod matrix;
 pub mod minmax;
 pub mod poly;
