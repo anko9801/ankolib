@@ -171,6 +171,8 @@ impl Display for Zmod {
 }
 
 pub mod mod_int {
+    use num::{Num, NumCast};
+
     type ModInternalNum = i64;
     thread_local!(
         static MOD: std::cell::RefCell<ModInternalNum> = std::cell::RefCell::new(0);
@@ -236,31 +238,17 @@ pub mod mod_int {
             self.0
         }
     }
-    macro_rules! impl_primitive {
-        ($primitive:ident) => {
-            impl From<$primitive> for ModInt {
-                fn from(v: $primitive) -> Self {
-                    let v = v as ModInternalNum;
-                    Self::internal_new(v)
-                }
-            }
-            impl ToInternalNum for $primitive {
-                fn to_internal_num(&self) -> ModInternalNum {
-                    *self as ModInternalNum
-                }
-            }
-        };
+    impl<T: Num + NumCast> From<T> for ModInt {
+        fn from(v: T) -> Self {
+            let v = v.to_i64().unwrap();
+            Self::internal_new(v)
+        }
     }
-    impl_primitive!(u8);
-    impl_primitive!(u16);
-    impl_primitive!(u32);
-    impl_primitive!(u64);
-    impl_primitive!(usize);
-    impl_primitive!(i8);
-    impl_primitive!(i16);
-    impl_primitive!(i32);
-    impl_primitive!(i64);
-    impl_primitive!(isize);
+    impl<T: Num + NumCast> ToInternalNum for T {
+        fn to_internal_num(&self) -> ModInternalNum {
+            self.to_i64().unwrap()
+        }
+    }
 
     impl<T: ToInternalNum> std::ops::AddAssign<T> for ModInt {
         fn add_assign(&mut self, rhs: T) {

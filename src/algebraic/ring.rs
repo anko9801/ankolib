@@ -1,3 +1,5 @@
+use num::{traits::NumAssign, Num, NumCast};
+
 use crate::util::trait_alias;
 use std::mem;
 
@@ -13,44 +15,40 @@ pub struct FactorsStruct<I> {
     n: I,
 }
 
-macro_rules! impl_uint {
-    ($t:ty) => {
-        impl UniqueFactorizationDomain for $t {
-            type Output = FactorsStruct<$t>;
-            fn factors(self) -> Self::Output {
-                Self::Output { i: 2, n: self }
-            }
+impl<T: Num + NumCast> UniqueFactorizationDomain for T {
+    type Output = FactorsStruct<T>;
+    fn factors(self) -> Self::Output {
+        Self::Output {
+            i: T::from(2).unwrap(),
+            n: self,
         }
-        impl Iterator for FactorsStruct<$t> {
-            type Item = ($t, u32);
-            fn next(&mut self) -> Option<($t, u32)> {
-                if self.n <= 1 || self.i == 0 {
-                    return None;
-                }
-                while self.i * self.i <= self.n {
-                    while self.n % self.i == 0 {
-                        let mut e = 1;
-                        self.n /= self.i;
-                        while self.n % self.i == 0 {
-                            self.n /= self.i;
-                            e += 1;
-                        }
-                        return Some((self.i, e));
-                    }
-                    self.i += 1;
-                }
-                if self.i > 0 {
-                    self.i = 0;
-                    return Some((self.n, 1));
-                }
-                None
-            }
-        }
-    };
-    ( $($t:ty)* ) => { $(impl_uint!($t);)* };
+    }
 }
-
-impl_uint!(u8 u16 u32 u64 u128 usize);
+impl<T: NumAssign + NumCast + PartialOrd + Copy> Iterator for FactorsStruct<T> {
+    type Item = (T, u32);
+    fn next(&mut self) -> Option<(T, u32)> {
+        if self.n <= T::one() || self.i == T::zero() {
+            return None;
+        }
+        while self.i * self.i <= self.n {
+            while self.n % self.i == T::zero() {
+                let mut e = 1;
+                self.n /= self.i;
+                while self.n % self.i == T::zero() {
+                    self.n /= self.i;
+                    e += 1;
+                }
+                return Some((self.i, e));
+            }
+            self.i += T::one();
+        }
+        if self.i > T::zero() {
+            self.i = T::zero();
+            return Some((self.n, 1));
+        }
+        None
+    }
+}
 
 pub trait EuclidDomain {
     fn gcd(lhs: Self, rhs: Self) -> Self;
@@ -58,36 +56,30 @@ pub trait EuclidDomain {
     fn lcm(lhs: Self, rhs: Self) -> Self;
 }
 
-macro_rules! impl_integer {
-    ($t:ty) => {
-        impl EuclidDomain for $t {
-            fn gcd(mut lhs: Self, mut rhs: Self) -> Self {
-                while rhs != 0 {
-                    let tmp = lhs % rhs;
-                    lhs = mem::replace(&mut rhs, tmp);
-                }
-                lhs
-            }
-            fn xgcd(lhs: Self, rhs: Self, x: &mut Self, y: &mut Self) -> Self {
-                if rhs != 0 {
-                    let d = Self::xgcd(rhs, lhs % rhs, y, x);
-                    *y -= (lhs / rhs) * *x;
-                    d
-                }else{
-                    *x = 1;
-                    *y = 0;
-                    lhs
-                }
-            }
-
-            fn lcm(lhs: Self, rhs: Self) -> Self {
-                lhs / Self::gcd(lhs, rhs) * rhs
-            }
+impl<T: NumAssign + Copy> EuclidDomain for T {
+    fn gcd(mut lhs: Self, mut rhs: Self) -> Self {
+        while rhs != T::one() {
+            let tmp = lhs % rhs;
+            lhs = mem::replace(&mut rhs, tmp);
         }
-    };
-    ( $($t:ty)* ) => { $(impl_integer!($t);)* };
+        lhs
+    }
+    fn xgcd(lhs: Self, rhs: Self, x: &mut Self, y: &mut Self) -> Self {
+        if rhs != T::zero() {
+            let d = Self::xgcd(rhs, lhs % rhs, y, x);
+            *y -= (lhs / rhs) * *x;
+            d
+        } else {
+            *x = T::one();
+            *y = T::zero();
+            lhs
+        }
+    }
+
+    fn lcm(lhs: Self, rhs: Self) -> Self {
+        lhs / Self::gcd(lhs, rhs) * rhs
+    }
 }
-impl_integer!(u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize);
 
 #[test]
 fn test_small() {
