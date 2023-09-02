@@ -56,6 +56,23 @@ impl IntegerModRing {
         }
         multiplicative_group
     }
+    // pub fn multiplicative_group_is_cyclic(&self) -> bool {
+    //     let mut n = self.order();
+    //     if n < 8.into() {
+    //         return true;
+    //     }
+
+    //     if n % 4 == 0.into() {
+    //         return false;
+    //     }
+    //     if n % 4 == 2.into() {
+    //         n = n / ZZ::from(2);
+    //     }
+
+    //     true
+    //     // return n.is_prime_power();
+    // }
+    pub fn multiplicative_generator(&self) {}
     pub fn category() {
         // Join of Category of finite commutative rings
         //     and Category of subquotients of monoids
