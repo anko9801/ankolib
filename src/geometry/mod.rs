@@ -28,7 +28,10 @@ struct Line {
     b: Point,
 }
 #[derive(Debug)]
-struct Segment(Line);
+struct Segment {
+    a: Point,
+    b: Point,
+}
 #[derive(Debug, Clone, Copy)]
 pub struct Circle {
     p: Point,
