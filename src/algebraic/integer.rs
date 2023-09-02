@@ -8,21 +8,12 @@ pub type Complex = Complex64;
 
 impl<T: NumAssign + NumCast + Copy> ScalarMul for T {
     fn scalar_mul(&self, e: usize) -> Self {
-        *self * T::from(e).unwrap()
+        self.mul(T::from(e).unwrap())
     }
 }
-impl<T: NumAssign + NumCast + Copy> ScalarPow for T {
-    fn pow(&self, mut e: usize) -> Self {
-        let mut result = T::one();
-        let mut cur = *self;
-        while e > 0 {
-            if e & 1 == 1 {
-                result *= cur;
-            }
-            e >>= 1;
-            cur *= cur;
-        }
-        result
+impl<T: NumAssign + PrimInt> ScalarPow for T {
+    fn scalar_pow(&self, e: usize) -> Self {
+        self.pow(e as u32)
     }
 }
 

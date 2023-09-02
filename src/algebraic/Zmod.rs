@@ -150,7 +150,7 @@ impl ScalarMul for Zmod {
 }
 
 impl ScalarPow for Zmod {
-    fn pow(&self, mut e: usize) -> Self {
+    fn scalar_pow(&self, mut e: usize) -> Self {
         let mut result = Self::one();
         let mut cur = self.clone();
         while e > 0 {

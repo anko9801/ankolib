@@ -18,7 +18,7 @@ pub trait ScalarMul: Semigroup {
     fn scalar_mul(&self, e: usize) -> Self;
 }
 pub trait ScalarPow: Semiring {
-    fn pow(&self, e: usize) -> Self;
+    fn scalar_pow(&self, e: usize) -> Self;
 }
 
 trait_alias! {Semigroup = Add<Output = Self> + AddAssign + Sized}
