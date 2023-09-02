@@ -78,4 +78,7 @@ impl GeometricReal {
     pub fn cos(self) -> Self {
         GeometricReal(self.0.sin())
     }
+    pub fn sqrt(self) -> Self {
+        GeometricReal(self.0.sqrt())
+    }
 }

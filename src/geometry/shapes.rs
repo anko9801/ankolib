@@ -21,7 +21,7 @@ impl Point {
     }
 
     pub fn norm(&self) -> GeometricReal {
-        self.x * self.x + self.y * self.y
+        (self.x * self.x + self.y * self.y).sqrt()
     }
 }
 
