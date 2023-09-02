@@ -1,48 +1,108 @@
-use num::{Num, NumCast};
-
 use crate::algebraic::ring::EuclidDomain;
 use crate::algebraic::{One, ScalarMul, ScalarPow, Zero};
+use num::{Integer, Num, NumCast};
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
+use super::integer::ZZ;
+
 type ZmodInt = i64;
+
+pub struct Ideal<T> {
+    element: T,
+}
+
+#[derive(Debug)]
+pub struct IntegerModRing {
+    order: ZZ,
+}
+impl IntegerModRing {
+    pub fn new(modulus: ZZ) -> Self {
+        if modulus == 0.into() {
+            panic!("is Integer ZZ");
+        } else if modulus < 0.into() {
+            Self { order: -modulus }
+        } else {
+            Self { order: modulus }
+        }
+    }
+    pub fn order(&self) -> ZZ {
+        self.order.clone()
+    }
+    pub fn characteristic(&self) -> ZZ {
+        self.order.clone()
+    }
+    pub fn krull_dimension(&self) -> ZZ {
+        0.into()
+    }
+    pub fn is_noetherian(&self) -> bool {
+        true
+    }
+    pub fn is_prime_field(&self) -> bool {
+        todo!();
+        // self.0.is_prime()
+    }
+    pub fn quotient(&self, ideal: Ideal<Self>) -> Self {
+        todo!();
+    }
+    pub fn list_of_elements_of_multiplicative_group(&self) -> Vec<ZZ> {
+        // TODO: 32, 64
+        let mut multiplicative_group = Vec::new();
+        for i in 1..self.order.to_u64_digits().1[0] as usize {
+            let num: ZZ = i.into();
+            if num.gcd(&self.order) == 1.into() {
+                multiplicative_group.push(num);
+            }
+        }
+        multiplicative_group
+    }
+    pub fn category() {
+        // Join of Category of finite commutative rings
+        //     and Category of subquotients of monoids
+        //     and Category of quotients of semigroups
+        //     and Category of finite enumerated sets
+    }
+}
 
 #[derive(Copy, Clone)]
 pub struct Zmod {
     num: ZmodInt,
-    MOD: ZmodInt,
+    modulus: ZmodInt,
 }
 
 impl<T: Num + NumCast> From<T> for Zmod {
     fn from(value: T) -> Self {
         Self {
             num: value.to_i64().unwrap(),
-            MOD: 0,
+            modulus: 0,
         }
     }
 }
 impl Zmod {
-    fn new(num: ZmodInt, MOD: ZmodInt) -> Self {
-        Self { num, MOD }
+    fn new(num: ZmodInt, modulus: ZmodInt) -> Self {
+        Self { num, modulus }
     }
-    fn modint(MOD: ZmodInt) -> Self {
-        Self { num: 0, MOD }
+    fn modint(modulus: ZmodInt) -> Self {
+        Self { num: 0, modulus }
     }
     fn num(&self, num: ZmodInt) -> Self {
-        Self { num, MOD: self.MOD }
+        Self {
+            num,
+            modulus: self.modulus,
+        }
     }
     fn value(&self) -> ZmodInt {
         self.num
     }
 
     fn check_mod(&self, rhs: Self) -> ZmodInt {
-        match (self.MOD, rhs.MOD) {
+        match (self.modulus, rhs.modulus) {
             (0, 0) => ZmodInt::MAX,
-            (0, _) => rhs.MOD,
-            (_, 0) => self.MOD,
+            (0, _) => rhs.modulus,
+            (_, 0) => self.modulus,
             (_, _) => {
-                if self.MOD == rhs.MOD {
-                    self.MOD
+                if self.modulus == rhs.modulus {
+                    self.modulus
                 } else {
                     panic!("MOD is not matched")
                 }
@@ -53,7 +113,7 @@ impl Zmod {
 
 impl Zero for Zmod {
     fn zero() -> Self {
-        Self { num: 0, MOD: 0 }
+        Self { num: 0, modulus: 0 }
     }
     fn is_zero(&self) -> bool {
         self.num == 0
@@ -62,7 +122,7 @@ impl Zero for Zmod {
 
 impl One for Zmod {
     fn one() -> Self {
-        Self { num: 1, MOD: 0 }
+        Self { num: 1, modulus: 0 }
     }
 }
 
@@ -116,7 +176,7 @@ impl Neg for Zmod {
     type Output = Self;
     fn neg(self) -> Self {
         let mut tmp = self.clone();
-        tmp.num = -self.num + self.MOD;
+        tmp.num = -self.num + self.modulus;
         tmp
     }
 }
@@ -171,7 +231,7 @@ impl ScalarPow for Zmod {
 
 impl Display for Zmod {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} mod {}", self.num, self.MOD)
+        write!(f, "{} mod {}", self.num, self.modulus)
     }
 }
 

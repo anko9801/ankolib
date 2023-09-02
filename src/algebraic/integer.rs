@@ -1,13 +1,19 @@
 use super::{
-    ring::{EuclidDomain, UFD},
+    ring::{EuclidDomain, Factor, UFD},
     ScalarMul, ScalarPow,
 };
-use num::{complex::Complex64, traits::NumAssign, BigInt, BigRational, NumCast, PrimInt};
+use num::{complex::Complex64, traits::NumAssign, BigInt, BigRational, Num, NumCast, PrimInt};
+use std::mem;
 
 pub type Int = BigInt;
 pub type Rational = BigRational;
 pub type Real = f64;
 pub type Complex = Complex64;
+
+pub type ZZ = Int;
+pub type QQ = Rational;
+pub type RR = Real;
+pub type CC = Complex;
 
 impl<T: NumAssign + NumCast + Copy> ScalarMul for T {
     fn scalar_mul(&self, e: usize) -> Self {
@@ -43,5 +49,84 @@ impl<T: PrimInt + NumAssign + UFD> CarmichaelLambda for T {
             );
         }
         T::from(res).unwrap()
+    }
+}
+
+impl<T: Num + NumCast> UFD for T {
+    fn factors(self) -> Factor<T> {
+        Factor {
+            i: T::from(2).unwrap(),
+            n: self,
+        }
+    }
+}
+
+impl<T: NumAssign + NumCast + PartialOrd + Copy> Iterator for Factor<T> {
+    type Item = (T, u32);
+    fn next(&mut self) -> Option<(T, u32)> {
+        if self.n <= T::one() || self.i == T::zero() {
+            return None;
+        }
+        while self.i * self.i <= self.n {
+            while self.n % self.i == T::zero() {
+                let mut e = 1;
+                self.n /= self.i;
+                while self.n % self.i == T::zero() {
+                    self.n /= self.i;
+                    e += 1;
+                }
+                return Some((self.i, e));
+            }
+            self.i += T::one();
+        }
+        if self.i > T::zero() {
+            self.i = T::zero();
+            return Some((self.n, 1));
+        }
+        None
+    }
+}
+
+impl<T: NumAssign + Copy> EuclidDomain for T {
+    fn gcd(mut lhs: Self, mut rhs: Self) -> Self {
+        while rhs != T::one() {
+            let tmp = lhs % rhs;
+            lhs = mem::replace(&mut rhs, tmp);
+        }
+        lhs
+    }
+    fn xgcd(lhs: Self, rhs: Self, x: &mut Self, y: &mut Self) -> Self {
+        if rhs != T::zero() {
+            let d = Self::xgcd(rhs, lhs % rhs, y, x);
+            *y -= (lhs / rhs) * *x;
+            d
+        } else {
+            *x = T::one();
+            *y = T::zero();
+            lhs
+        }
+    }
+
+    fn lcm(lhs: Self, rhs: Self) -> Self {
+        lhs / Self::gcd(lhs, rhs) * rhs
+    }
+}
+
+#[test]
+fn test_small() {
+    let suite: &[(u64, &[(u64, u32)])] = &[
+        (0, &[]),
+        (1, &[]),
+        (2, &[(2, 1)]),
+        (3, &[(3, 1)]),
+        (4, &[(2, 2)]),
+        (5, &[(5, 1)]),
+        (10, &[(2, 1), (5, 1)]),
+        (100, &[(2, 2), (5, 2)]),
+        (200, &[(2, 3), (5, 2)]),
+    ];
+    for (n, expected) in suite {
+        let actual: Vec<_> = n.factors().collect();
+        assert_eq!(&actual, expected);
     }
 }
