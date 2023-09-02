@@ -1,12 +1,6 @@
 use super::{Circle, GeometricReal, Line, Point, Segment};
 use std::ops;
 
-const COUNTER_CLOCKWISE: isize = 1;
-const CLOCKWISE: isize = -1;
-const ONLINE_BACK: isize = 2;
-const ONLINE_FRONT: isize = -2;
-const ON_SEGMENT: isize = 0;
-
 impl Point {
     pub fn new(x: GeometricReal, y: GeometricReal) -> Self {
         Self { x, y }
@@ -32,6 +26,11 @@ impl Point {
 }
 
 // 点の回転方向
+const COUNTER_CLOCKWISE: isize = 1;
+const CLOCKWISE: isize = -1;
+const ONLINE_BACK: isize = 2;
+const ONLINE_FRONT: isize = -2;
+const ON_SEGMENT: isize = 0;
 pub fn ccw(p0: Point, p1: Point, p2: Point) -> isize {
     let a: Point = p1 - p0;
     let b: Point = p2 - p0;

@@ -52,7 +52,7 @@ impl fmt::Display for Line {
 
 impl fmt::Display for Circle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "point {} radius {}", self.p, self.r)
+        write!(f, "from {} radius {}", self.p, self.r)
     }
 }
 
