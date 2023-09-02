@@ -1,4 +1,74 @@
-use super::{Circle, Line, Point, Real, Segment};
+use super::{Circle, GeometricReal, Line, Point, Segment};
+use std::ops;
+
+const COUNTER_CLOCKWISE: isize = 1;
+const CLOCKWISE: isize = -1;
+const ONLINE_BACK: isize = 2;
+const ONLINE_FRONT: isize = -2;
+const ON_SEGMENT: isize = 0;
+
+impl Point {
+    pub fn new(x: GeometricReal, y: GeometricReal) -> Self {
+        Self { x, y }
+    }
+    // 点 p を原点中心に反時計回りに theta 度回転
+    pub fn rotate(&self, theta: GeometricReal) -> Point {
+        Point {
+            x: GeometricReal::cos(theta) * self.x - GeometricReal::sin(theta) * self.y,
+            y: GeometricReal::sin(theta) * self.x + GeometricReal::cos(theta) * self.y,
+        }
+    }
+
+    pub fn dot(&self, a: Point) -> GeometricReal {
+        self.x * a.x + self.y * a.y
+    }
+    pub fn cross(&self, a: Point) -> GeometricReal {
+        self.x * a.y - self.y * a.x
+    }
+
+    pub fn norm(&self) -> GeometricReal {
+        self.x * self.x + self.y * self.y
+    }
+
+    // 点の回転方向
+    pub fn ccw(p0: Point, p1: Point, p2: Point) -> isize {
+        let a: Point = p1 - p0;
+        let b: Point = p2 - p0;
+        if a.cross(b) > 0.0.into() {
+            COUNTER_CLOCKWISE
+        } else if a.cross(b) < 0.0.into() {
+            CLOCKWISE
+        } else if a.dot(b) < 0.0.into() {
+            ONLINE_BACK
+        } else if a.norm() < b.norm() {
+            ONLINE_FRONT
+        } else {
+            ON_SEGMENT
+        }
+    }
+}
+
+impl ops::Add<Point> for Point {
+    type Output = Point;
+
+    fn add(self, _rhs: Point) -> Point {
+        Point {
+            x: self.x + _rhs.x,
+            y: self.y + _rhs.y,
+        }
+    }
+}
+
+impl ops::Sub<Point> for Point {
+    type Output = Point;
+
+    fn sub(self, _rhs: Point) -> Point {
+        Point {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+        }
+    }
+}
 
 impl Line {
     pub fn new(a: Point, b: Point) -> Self {
@@ -6,7 +76,7 @@ impl Line {
     }
 
     // ax + by = c
-    pub fn from_coeff(a: Real, b: Real, c: Real) -> Self {
+    pub fn from_coeff(a: GeometricReal, b: GeometricReal, c: GeometricReal) -> Self {
         if a == 0.0.into() {
             Line {
                 a: Point::new(0.0.into(), c / b),
@@ -43,25 +113,10 @@ impl Segment {
 //   friend istream &operator>>(istream &is, Line &a) { return is >> a.a >> a.b; }
 
 impl Circle {
-    pub fn new(p: Point, r: Real) -> Self {
+    pub fn new(p: Point, r: GeometricReal) -> Self {
         Circle { p, r }
     }
 }
-
-// // 点の回転方向
-// static const int COUNTER_CLOCKWISE = 1;
-// static const int CLOCKWISE = -1;
-// static const int ONLINE_BACK = 2;
-// static const int ONLINE_FRONT = -2;
-// static const int ON_SEGMENT = 0;
-// int ccw(Point p0, Point p1, Point p2) {
-//   Point a = p1 - p0, b = p2 - p0;
-//   if (cross(a, b) > EPS) return COUNTER_CLOCKWISE;
-//   if (cross(a, b) < -EPS) return CLOCKWISE;
-//   if (dot(a, b) < -EPS) return ONLINE_BACK;
-//   if (norm(a) < norm(b)) return ONLINE_FRONT;
-//   return ON_SEGMENT;
-// }
 
 // // 射影(projection)
 // // 直線(線分)lに点pから引いた垂線の足を求める

@@ -40,8 +40,13 @@ impl Zmod {
             (0, 0) => ZmodInt::MAX,
             (0, _) => rhs.MOD,
             (_, 0) => self.MOD,
-            (_, _) if self.MOD == rhs.MOD => self.MOD,
-            (_, _) => panic!("MOD is not matched"),
+            (_, _) => {
+                if self.MOD == rhs.MOD {
+                    self.MOD
+                } else {
+                    panic!("MOD is not matched")
+                }
+            }
         }
     }
 }

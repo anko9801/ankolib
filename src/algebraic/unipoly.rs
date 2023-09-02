@@ -14,7 +14,6 @@ trait_alias! {CRing = CommutativeRing + Clone + Eq + Display}
 trait_alias! {Analysis = Field + From<usize> + Clone + Eq + Display}
 
 impl<T: CRing> FPS<T> {
-    // コンストラクタ
     pub fn term(coeff: T, power: usize) -> FPS<T> {
         match (&coeff, power) {
             (_, _) if coeff == T::zero() => FPS::from(vec![T::zero()]),
