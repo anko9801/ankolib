@@ -1,4 +1,7 @@
-use super::{ScalarMul, ScalarPow};
+use super::{
+    ring::{EuclidDomain, UFD},
+    ScalarMul, ScalarPow,
+};
 use num::{complex::Complex64, traits::NumAssign, BigInt, BigRational, NumCast, PrimInt};
 
 pub type Int = BigInt;
@@ -21,19 +24,24 @@ pub trait CarmichaelLambda {
     fn carmichael_lambda(self) -> Self;
 }
 
-// uint
-// impl<T: PrimInt + UniqueFactorizationDomain> CarmichaelLambda for T {
-//     fn carmichael_lambda(self) -> Self {
-//         let n = self;
-//         let e2 = n.trailing_zeros();
-//         let mut res = match e2 {
-//             0 | 1 => 1,
-//             2 => 2,
-//             _ => (1 << e2 - 2),
-//         };
-//         for (p, e) in (n >> e2 as usize).factors() {
-//             res = EuclidDomain::lcm(res, p.pow(e - 1) * (p - 1));
-//         }
-//         res
-//     }
-// }
+impl<T: PrimInt + NumAssign + UFD> CarmichaelLambda for T {
+    fn carmichael_lambda(self) -> Self {
+        let n = self;
+        let e2 = n.trailing_zeros();
+        let mut res = match e2 {
+            0 | 1 => 1,
+            2 => 2,
+            _ => 1 << e2 - 2,
+        };
+        for (p, e) in (n >> e2 as usize).factors() {
+            res = EuclidDomain::lcm(
+                res,
+                p.scalar_pow((e - 1) as usize)
+                    .scalar_mul(p.to_usize().unwrap() - 1)
+                    .to_i32()
+                    .unwrap(),
+            );
+        }
+        T::from(res).unwrap()
+    }
+}

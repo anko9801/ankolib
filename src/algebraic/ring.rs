@@ -1,30 +1,27 @@
 use num::{traits::NumAssign, Num, NumCast};
-
-use crate::util::trait_alias;
 use std::mem;
 
-pub trait UniqueFactorizationDomain {
-    type Output;
-    fn factors(self) -> Self::Output;
+pub trait UFD {
+    fn factors(self) -> Factor<Self>
+    where
+        Self: Sized;
 }
-trait_alias! {UFD = UniqueFactorizationDomain}
 
 #[derive(Debug)]
-pub struct FactorsStruct<I> {
+pub struct Factor<I> {
     i: I,
     n: I,
 }
 
-impl<T: Num + NumCast> UniqueFactorizationDomain for T {
-    type Output = FactorsStruct<T>;
-    fn factors(self) -> Self::Output {
-        Self::Output {
+impl<T: Num + NumCast> UFD for T {
+    fn factors(self) -> Factor<T> {
+        Factor {
             i: T::from(2).unwrap(),
             n: self,
         }
     }
 }
-impl<T: NumAssign + NumCast + PartialOrd + Copy> Iterator for FactorsStruct<T> {
+impl<T: NumAssign + NumCast + PartialOrd + Copy> Iterator for Factor<T> {
     type Item = (T, u32);
     fn next(&mut self) -> Option<(T, u32)> {
         if self.n <= T::one() || self.i == T::zero() {
