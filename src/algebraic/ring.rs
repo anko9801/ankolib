@@ -1,5 +1,10 @@
+#[derive(Debug, PartialEq, PartialOrd)]
+pub struct Factor<T> {
+    pub p: T,
+    pub e: usize,
+}
 pub trait UFD {
-    fn factors(self) -> Vec<(Self, usize)>
+    fn factors(self) -> Vec<Factor<Self>>
     where
         Self: Sized;
 }

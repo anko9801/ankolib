@@ -1,5 +1,5 @@
 use super::{
-    ring::{EuclidDomain, UFD},
+    ring::{EuclidDomain, Factor, UFD},
     ScalarMul, ScalarPow,
 };
 use num::{complex::Complex64, traits::NumAssign, BigInt, BigRational, Num, NumCast, PrimInt};
@@ -39,11 +39,13 @@ impl<T: PrimInt + NumAssign> CarmichaelLambda for T {
             2 => 2,
             _ => 1 << e2 - 2,
         };
-        for (p, e) in (n >> e2 as usize).factors() {
+        for factor in (n >> e2 as usize).factors() {
             res = EuclidDomain::lcm(
                 res,
-                p.scalar_pow((e - 1) as usize)
-                    .scalar_mul(p.to_usize().unwrap() - 1)
+                factor
+                    .p
+                    .scalar_pow((factor.e - 1) as usize)
+                    .scalar_mul(factor.p.to_usize().unwrap() - 1)
                     .to_i32()
                     .unwrap(),
             );
@@ -53,7 +55,7 @@ impl<T: PrimInt + NumAssign> CarmichaelLambda for T {
 }
 
 impl<T: NumAssign + Clone + PartialOrd + PartialEq> UFD for T {
-    fn factors(self) -> Vec<(Self, usize)> {
+    fn factors(self) -> Vec<Factor<Self>> {
         let mut res = Vec::new();
         let mut n = self.clone();
         if n <= T::one() {
@@ -69,13 +71,12 @@ impl<T: NumAssign + Clone + PartialOrd + PartialEq> UFD for T {
                     n /= p.clone();
                     e += 1;
                 }
-                res.push((p.clone(), e));
+                res.push(Factor { p: p.clone(), e });
             }
             p += T::one();
         }
-        if p > T::zero() {
-            p = T::zero();
-            res.push((n, 1));
+        if n != T::one() {
+            res.push(Factor { p: n, e: 1 });
         }
         res
     }
@@ -107,16 +108,16 @@ impl<T: NumAssign + Clone> EuclidDomain for T {
 
 #[test]
 fn test_small() {
-    let suite: &[(u64, &[(u64, usize)])] = &[
+    let suite: &[(u64, &[Factor<u64>])] = &[
         (0, &[]),
         (1, &[]),
-        (2, &[(2, 1)]),
-        (3, &[(3, 1)]),
-        (4, &[(2, 2)]),
-        (5, &[(5, 1)]),
-        (10, &[(2, 1), (5, 1)]),
-        (100, &[(2, 2), (5, 2)]),
-        (200, &[(2, 3), (5, 2)]),
+        (2, &[Factor { p: 2, e: 1 }]),
+        (3, &[Factor { p: 3, e: 1 }]),
+        (4, &[Factor { p: 2, e: 2 }]),
+        (5, &[Factor { p: 5, e: 1 }]),
+        (10, &[Factor { p: 2, e: 1 }, Factor { p: 5, e: 1 }]),
+        (100, &[Factor { p: 2, e: 2 }, Factor { p: 5, e: 2 }]),
+        (200, &[Factor { p: 2, e: 3 }, Factor { p: 5, e: 2 }]),
     ];
     for (n, expected) in suite {
         let actual: Vec<_> = n.factors();

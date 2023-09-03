@@ -47,9 +47,8 @@ impl IntegerModRing {
         true
     }
     pub fn is_prime_field(&self) -> bool {
-        self.order.clone().factors();
-        todo!();
-        // self.0.is_prime()
+        let factors = self.order.clone().factors();
+        factors.len() == 1 && factors[0].e == 1
     }
     pub fn quotient(&self, ideal: Ideal<Self>) -> Self {
         todo!();
@@ -65,22 +64,20 @@ impl IntegerModRing {
         }
         multiplicative_group
     }
-    // pub fn multiplicative_group_is_cyclic(&self) -> bool {
-    //     let mut n = self.order();
-    //     if n < 8.into() {
-    //         return true;
-    //     }
-
-    //     if n % 4 == 0.into() {
-    //         return false;
-    //     }
-    //     if n % 4 == 2.into() {
-    //         n = n / ZZ::from(2);
-    //     }
-
-    //     true
-    //     // return n.is_prime_power();
-    // }
+    pub fn multiplicative_group_is_cyclic(&self) -> bool {
+        let mut n = self.order();
+        if n < 8.into() {
+            return true;
+        }
+        if n.clone() % 4 == 0.into() {
+            return false;
+        }
+        if n.clone() % 4 == 2.into() {
+            n /= ZZ::from(2);
+        }
+        let factors = self.order.clone().factors();
+        factors.len() == 1
+    }
     pub fn multiplicative_generator(&self) {}
     pub fn category() {
         // Join of Category of finite commutative rings
