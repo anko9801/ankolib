@@ -1,12 +1,10 @@
 use crate::algebraic::ring::EuclidDomain;
 use crate::algebraic::{One, ScalarMul, ScalarPow, Zero};
-use num::{Integer, Num, NumCast};
+use num::{BigInt, FromPrimitive, Integer, Num, NumCast};
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 use super::integer::ZZ;
-
-type ZmodInt = i64;
 
 pub struct Ideal<T> {
     element: T,
@@ -18,12 +16,19 @@ pub struct IntegerModRing {
 }
 impl IntegerModRing {
     pub fn new(modulus: ZZ) -> Self {
+        // Integer
         if modulus == 0.into() {
-            panic!("is Integer ZZ");
+            Self { order: modulus }
         } else if modulus < 0.into() {
             Self { order: -modulus }
         } else {
             Self { order: modulus }
+        }
+    }
+    pub fn elem(&self, value: ZZ) -> IntegerMod {
+        IntegerMod {
+            num: value,
+            modulus: self.order.clone(),
         }
     }
     pub fn order(&self) -> ZZ {
@@ -81,106 +86,103 @@ impl IntegerModRing {
     }
 }
 
-#[derive(Copy, Clone)]
-pub struct Zmod {
-    num: ZmodInt,
-    modulus: ZmodInt,
+pub type Zmod = IntegerMod;
+#[derive(Clone)]
+pub struct IntegerMod {
+    num: ZZ,
+    modulus: ZZ,
 }
 
-impl<T: Num + NumCast> From<T> for Zmod {
-    fn from(value: T) -> Self {
-        Self {
-            num: value.to_i64().unwrap(),
-            modulus: 0,
-        }
-    }
-}
-impl Zmod {
-    fn new(num: ZmodInt, modulus: ZmodInt) -> Self {
+// impl<T: Num + NumCast> From<T> for IntegerMod {
+//     fn from(value: T) -> Self {
+//         Self {
+//             num: ZZ::from(value),
+//             modulus: 0.into(),
+//         }
+//     }
+// }
+impl IntegerMod {
+    fn new(num: ZZ, modulus: ZZ) -> Self {
         Self { num, modulus }
     }
-    fn modint(modulus: ZmodInt) -> Self {
-        Self { num: 0, modulus }
+    fn value(&self) -> ZZ {
+        self.num.clone()
     }
-    fn num(&self, num: ZmodInt) -> Self {
-        Self {
-            num,
-            modulus: self.modulus,
-        }
-    }
-    fn value(&self) -> ZmodInt {
-        self.num
-    }
+}
+impl TryFrom<IntegerMod> for ZZ {
+    type Error = ();
 
-    fn check_mod(&self, rhs: Self) -> ZmodInt {
-        match (self.modulus, rhs.modulus) {
-            (0, 0) => ZmodInt::MAX,
-            (0, _) => rhs.modulus,
-            (_, 0) => self.modulus,
-            (_, _) => {
-                if self.modulus == rhs.modulus {
-                    self.modulus
-                } else {
-                    panic!("MOD is not matched")
-                }
-            }
+    fn try_from(value: IntegerMod) -> Result<Self, Self::Error> {
+        if value.modulus == 0.into() {
+            Ok(value.num)
+        } else {
+            Err(())
         }
     }
 }
 
-impl Zero for Zmod {
+impl Zero for IntegerMod {
     fn zero() -> Self {
-        Self { num: 0, modulus: 0 }
+        Self {
+            num: 0.into(),
+            modulus: 0.into(),
+        }
     }
     fn is_zero(&self) -> bool {
-        self.num == 0
+        self.num == 0.into()
+    }
+    fn set_zero(&mut self) {
+        self.num = 0.into();
     }
 }
 
-impl One for Zmod {
+impl One for IntegerMod {
     fn one() -> Self {
-        Self { num: 1, modulus: 0 }
+        Self {
+            num: 1.into(),
+            modulus: 0.into(),
+        }
     }
 }
 
-impl AddAssign for Zmod {
+impl AddAssign for IntegerMod {
     fn add_assign(&mut self, rhs: Self) {
-        let pmod = self.check_mod(rhs);
+        assert!(self.modulus == rhs.modulus);
         self.num += rhs.num;
-        if self.num >= pmod {
-            self.num -= pmod;
+        if self.num >= self.modulus {
+            self.num -= self.modulus.clone();
         }
     }
 }
 
-impl SubAssign for Zmod {
+impl SubAssign for IntegerMod {
     fn sub_assign(&mut self, rhs: Self) {
-        let pmod = self.check_mod(rhs);
+        assert!(self.modulus == rhs.modulus);
         self.num -= rhs.num;
-        if self.num < 0 {
-            self.num += pmod;
+        if self.num < 0.into() {
+            self.num += self.modulus.clone();
         }
     }
 }
 
-impl MulAssign for Zmod {
+impl MulAssign for IntegerMod {
     fn mul_assign(&mut self, rhs: Self) {
-        let pmod = self.check_mod(rhs);
+        assert!(self.modulus == rhs.modulus);
         self.num *= rhs.num;
-        self.num %= pmod;
+        self.num %= self.modulus.clone();
     }
 }
 
-impl DivAssign for Zmod {
+impl DivAssign for IntegerMod {
     fn div_assign(&mut self, rhs: Self) {
-        let pmod = self.check_mod(rhs);
-        let (mut x, mut y) = (1, 0);
-        EuclidDomain::xgcd(rhs.num, pmod, &mut x, &mut y);
-        self.num = (self.num * x) % pmod;
+        assert!(self.modulus == rhs.modulus);
+        let (mut x, mut y): (ZZ, ZZ) = (1.into(), 0.into());
+        EuclidDomain::xgcd(rhs.num, self.modulus.clone(), &mut x, &mut y);
+        self.num = (self.num.clone() * x) % self.modulus.clone();
     }
 }
 
-impl Add for Zmod {
+impl Add for IntegerMod {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         let mut tmp = self.clone();
@@ -189,7 +191,7 @@ impl Add for Zmod {
     }
 }
 
-impl Neg for Zmod {
+impl Neg for IntegerMod {
     type Output = Self;
     fn neg(self) -> Self {
         let mut tmp = self.clone();
@@ -198,7 +200,7 @@ impl Neg for Zmod {
     }
 }
 
-impl Sub for Zmod {
+impl Sub for IntegerMod {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
         let mut tmp = self.clone();
@@ -207,7 +209,7 @@ impl Sub for Zmod {
     }
 }
 
-impl Mul for Zmod {
+impl Mul for IntegerMod {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self {
         let mut tmp = self.clone();
@@ -216,7 +218,7 @@ impl Mul for Zmod {
     }
 }
 
-impl Div for Zmod {
+impl Div for IntegerMod {
     type Output = Self;
     fn div(self, rhs: Self) -> Self {
         let mut tmp = self.clone();
@@ -225,28 +227,31 @@ impl Div for Zmod {
     }
 }
 
-impl ScalarMul for Zmod {
+impl ScalarMul for IntegerMod {
     fn scalar_mul(&self, rhs: usize) -> Self {
-        *self * rhs.into()
+        Self {
+            num: rhs.into(),
+            modulus: self.modulus.clone(),
+        } * self.clone()
     }
 }
 
-impl ScalarPow for Zmod {
+impl ScalarPow for IntegerMod {
     fn scalar_pow(&self, mut e: usize) -> Self {
         let mut result = Self::one();
         let mut cur = self.clone();
         while e > 0 {
             if e & 1 == 1 {
-                result *= cur;
+                result *= cur.clone();
             }
             e >>= 1;
-            cur *= cur;
+            cur *= cur.clone();
         }
         result
     }
 }
 
-impl Display for Zmod {
+impl Display for IntegerMod {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} mod {}", self.num, self.modulus)
     }

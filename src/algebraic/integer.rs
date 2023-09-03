@@ -87,18 +87,18 @@ impl<T: NumAssign + NumCast + PartialOrd + Copy> Iterator for Factor<T> {
     }
 }
 
-impl<T: NumAssign + Copy> EuclidDomain for T {
+impl<T: NumAssign + Clone> EuclidDomain for T {
     fn gcd(mut lhs: Self, mut rhs: Self) -> Self {
         while rhs != T::one() {
-            let tmp = lhs % rhs;
+            let tmp = lhs % rhs.clone();
             lhs = mem::replace(&mut rhs, tmp);
         }
         lhs
     }
     fn xgcd(lhs: Self, rhs: Self, x: &mut Self, y: &mut Self) -> Self {
         if rhs != T::zero() {
-            let d = Self::xgcd(rhs, lhs % rhs, y, x);
-            *y -= (lhs / rhs) * *x;
+            let d = Self::xgcd(rhs.clone(), lhs.clone() % rhs.clone(), y, x);
+            *y -= (lhs.clone() / rhs.clone()) * x.clone();
             d
         } else {
             *x = T::one();
@@ -108,7 +108,7 @@ impl<T: NumAssign + Copy> EuclidDomain for T {
     }
 
     fn lcm(lhs: Self, rhs: Self) -> Self {
-        lhs / Self::gcd(lhs, rhs) * rhs
+        lhs.clone() / Self::gcd(lhs.clone(), rhs.clone()) * rhs.clone()
     }
 }
 
