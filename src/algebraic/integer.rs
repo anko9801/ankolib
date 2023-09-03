@@ -30,7 +30,7 @@ pub trait CarmichaelLambda {
     fn carmichael_lambda(self) -> Self;
 }
 
-impl<T: PrimInt + NumAssign + UFD> CarmichaelLambda for T {
+impl<T: PrimInt + NumAssign> CarmichaelLambda for T {
     fn carmichael_lambda(self) -> Self {
         let n = self;
         let e2 = n.trailing_zeros();
@@ -52,24 +52,24 @@ impl<T: PrimInt + NumAssign + UFD> CarmichaelLambda for T {
     }
 }
 
-impl<T: PrimInt + NumAssign> UFD for T {
+impl<T: NumAssign + Clone + PartialOrd + PartialEq> UFD for T {
     fn factors(self) -> Vec<(Self, usize)> {
         let mut res = Vec::new();
-        let mut n = self;
+        let mut n = self.clone();
         if n <= T::one() {
             return res;
         }
-        let mut p = T::from(2).unwrap();
+        let mut p = T::one() + T::one();
 
-        while p * p <= self {
-            while self % p == T::zero() {
+        while p.clone() * p.clone() <= n.clone() {
+            while n.clone() % p.clone() == T::zero() {
                 let mut e = 1;
-                n /= p;
-                while n % p == T::zero() {
-                    n /= p;
+                n /= p.clone();
+                while n.clone() % p.clone() == T::zero() {
+                    n /= p.clone();
                     e += 1;
                 }
-                res.push((p, e));
+                res.push((p.clone(), e));
             }
             p += T::one();
         }

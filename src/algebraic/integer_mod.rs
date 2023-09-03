@@ -1,4 +1,4 @@
-use crate::algebraic::ring::EuclidDomain;
+use crate::algebraic::ring::{EuclidDomain, UFD};
 use crate::algebraic::{One, ScalarMul, ScalarPow, Zero};
 use num::Integer;
 use std::fmt::{Display, Formatter};
@@ -47,6 +47,7 @@ impl IntegerModRing {
         true
     }
     pub fn is_prime_field(&self) -> bool {
+        self.order.clone().factors();
         todo!();
         // self.0.is_prime()
     }
@@ -96,16 +97,9 @@ pub struct IntegerMod {
     modulus: ZZ,
 }
 
-// impl<T: Num + NumCast> From<T> for IntegerMod {
-//     fn from(value: T) -> Self {
-//         Self {
-//             num: ZZ::from(value),
-//             modulus: 0.into(),
-//         }
-//     }
-// }
 impl IntegerMod {
-    fn new(num: ZZ, modulus: ZZ) -> Self {
+    fn new(value: ZZ, modulus: ZZ) -> Self {
+        let num = &value % &modulus;
         Self { num, modulus }
     }
     fn value(&self) -> ZZ {
