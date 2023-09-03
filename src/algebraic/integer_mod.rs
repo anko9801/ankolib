@@ -1,6 +1,6 @@
 use crate::algebraic::ring::EuclidDomain;
 use crate::algebraic::{One, ScalarMul, ScalarPow, Zero};
-use num::{BigInt, FromPrimitive, Integer, Num, NumCast};
+use num::Integer;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
@@ -35,6 +35,9 @@ impl IntegerModRing {
         self.order.clone()
     }
     pub fn characteristic(&self) -> ZZ {
+        self.order.clone()
+    }
+    pub fn cardinality(&self) -> ZZ {
         self.order.clone()
     }
     pub fn krull_dimension(&self) -> ZZ {
@@ -111,7 +114,6 @@ impl IntegerMod {
 }
 impl TryFrom<IntegerMod> for ZZ {
     type Error = ();
-
     fn try_from(value: IntegerMod) -> Result<Self, Self::Error> {
         if value.modulus == 0.into() {
             Ok(value.num)
@@ -229,16 +231,13 @@ impl Div for IntegerMod {
 
 impl ScalarMul for IntegerMod {
     fn scalar_mul(&self, rhs: usize) -> Self {
-        Self {
-            num: rhs.into(),
-            modulus: self.modulus.clone(),
-        } * self.clone()
+        Self::new(rhs.into(), self.modulus.clone()) * self.clone()
     }
 }
 
 impl ScalarPow for IntegerMod {
     fn scalar_pow(&self, mut e: usize) -> Self {
-        let mut result = Self::one();
+        let mut result = Self::new(1.into(), self.modulus.clone());
         let mut cur = self.clone();
         while e > 0 {
             if e & 1 == 1 {

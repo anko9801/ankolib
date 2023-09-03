@@ -1,13 +1,7 @@
 pub trait UFD {
-    fn factors(self) -> Factor<Self>
+    fn factors(self) -> Vec<(Self, usize)>
     where
         Self: Sized;
-}
-
-#[derive(Debug)]
-pub struct Factor<I> {
-    pub i: I,
-    pub n: I,
 }
 
 pub trait EuclidDomain {

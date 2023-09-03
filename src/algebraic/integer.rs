@@ -1,5 +1,5 @@
 use super::{
-    ring::{EuclidDomain, Factor, UFD},
+    ring::{EuclidDomain, UFD},
     ScalarMul, ScalarPow,
 };
 use num::{complex::Complex64, traits::NumAssign, BigInt, BigRational, Num, NumCast, PrimInt};
@@ -52,38 +52,32 @@ impl<T: PrimInt + NumAssign + UFD> CarmichaelLambda for T {
     }
 }
 
-impl<T: Num + NumCast> UFD for T {
-    fn factors(self) -> Factor<T> {
-        Factor {
-            i: T::from(2).unwrap(),
-            n: self,
+impl<T: PrimInt + NumAssign> UFD for T {
+    fn factors(self) -> Vec<(Self, usize)> {
+        let mut res = Vec::new();
+        let mut n = self;
+        if n <= T::one() {
+            return res;
         }
-    }
-}
+        let mut p = T::from(2).unwrap();
 
-impl<T: NumAssign + NumCast + PartialOrd + Copy> Iterator for Factor<T> {
-    type Item = (T, u32);
-    fn next(&mut self) -> Option<(T, u32)> {
-        if self.n <= T::one() || self.i == T::zero() {
-            return None;
-        }
-        while self.i * self.i <= self.n {
-            while self.n % self.i == T::zero() {
+        while p * p <= self {
+            while self % p == T::zero() {
                 let mut e = 1;
-                self.n /= self.i;
-                while self.n % self.i == T::zero() {
-                    self.n /= self.i;
+                n /= p;
+                while n % p == T::zero() {
+                    n /= p;
                     e += 1;
                 }
-                return Some((self.i, e));
+                res.push((p, e));
             }
-            self.i += T::one();
+            p += T::one();
         }
-        if self.i > T::zero() {
-            self.i = T::zero();
-            return Some((self.n, 1));
+        if p > T::zero() {
+            p = T::zero();
+            res.push((n, 1));
         }
-        None
+        res
     }
 }
 
@@ -106,7 +100,6 @@ impl<T: NumAssign + Clone> EuclidDomain for T {
             lhs
         }
     }
-
     fn lcm(lhs: Self, rhs: Self) -> Self {
         lhs.clone() / Self::gcd(lhs.clone(), rhs.clone()) * rhs.clone()
     }
@@ -114,7 +107,7 @@ impl<T: NumAssign + Clone> EuclidDomain for T {
 
 #[test]
 fn test_small() {
-    let suite: &[(u64, &[(u64, u32)])] = &[
+    let suite: &[(u64, &[(u64, usize)])] = &[
         (0, &[]),
         (1, &[]),
         (2, &[(2, 1)]),
@@ -126,7 +119,7 @@ fn test_small() {
         (200, &[(2, 3), (5, 2)]),
     ];
     for (n, expected) in suite {
-        let actual: Vec<_> = n.factors().collect();
+        let actual: Vec<_> = n.factors();
         assert_eq!(&actual, expected);
     }
 }
