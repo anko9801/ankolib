@@ -15,14 +15,23 @@ pub type QQ = Rational;
 pub type RR = Real;
 pub type CC = Complex;
 
-impl<T: NumAssign + NumCast + Copy> ScalarMul for T {
+impl<T: NumAssign + NumCast + Clone> ScalarMul for T {
     fn scalar_mul(&self, e: usize) -> Self {
-        self.mul(T::from(e).unwrap())
+        self.clone().mul(T::from(e).unwrap())
     }
 }
-impl<T: NumAssign + PrimInt> ScalarPow for T {
-    fn scalar_pow(&self, e: usize) -> Self {
-        self.pow(e as u32)
+impl<T: NumAssign + NumCast + Clone> ScalarPow for T {
+    fn scalar_pow(&self, mut e: usize) -> Self {
+        let mut result = T::from(1).unwrap();
+        let mut cur = self.clone();
+        while e > 0 {
+            if e & 1 == 1 {
+                result *= cur.clone();
+            }
+            e >>= 1;
+            cur *= cur.clone();
+        }
+        result
     }
 }
 

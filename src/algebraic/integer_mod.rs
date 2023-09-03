@@ -5,6 +5,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 use super::integer::ZZ;
+use super::polynomial::FPS;
 
 pub struct Ideal<T> {
     element: T,
@@ -85,6 +86,9 @@ impl IntegerModRing {
         //     and Category of quotients of semigroups
         //     and Category of finite enumerated sets
     }
+    // pub fn charpoly(self) -> FPS<ZZ> {
+    //     FPS::from(vec![-self, 1.into()])
+    // }
 }
 
 pub type Zmod = IntegerMod;

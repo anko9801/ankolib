@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-pub mod Fp;
+pub mod finite_field;
 pub mod integer;
 pub mod integer_mod;
 pub mod matrix;
