@@ -1,3 +1,10 @@
+pub mod finite_field;
+pub mod integer;
+pub mod integer_mod;
+pub mod matrix;
+pub mod polynomial;
+pub mod tropical;
+
 #[derive(Debug, PartialEq, PartialOrd)]
 pub struct Factor<T> {
     pub p: T,

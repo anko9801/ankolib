@@ -166,3 +166,19 @@ impl Circle {
         }
     }
 }
+
+mod test {
+    use crate::geometry::{Circle, Point};
+
+    #[test]
+    fn intersect() {
+        let p1 = Point::new(0.0.into(), 0.0.into());
+        let p2 = Point::new(3.0.into(), 0.0.into());
+        let c1 = Circle::new(p1, 3.0.into());
+        let c2 = Circle::new(p2, 3.0.into());
+        assert!(c1.is_intersect(c2) == 2);
+        let c1 = Circle::new(p1, 1.0.into());
+        let c2 = Circle::new(p2, 2.0.into());
+        assert!(c1.is_intersect(c2) == 3);
+    }
+}

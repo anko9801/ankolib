@@ -9,32 +9,20 @@ use std::ops::{
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct FPS<T: CRing>(Vec<T>);
-trait_alias! {CRing = CommutativeRing + Clone + Copy + Eq + Display}
+trait_alias! {CRing = CommutativeRing + Clone + Eq + Display}
 trait_alias! {Analysis = Field + From<usize> + Clone + Copy + Eq + Display}
 
 impl<T: CRing> FPS<T> {
     pub fn term(coeff: T, power: usize) -> FPS<T> {
-        match (&coeff, power) {
-            (_, 0) => FPS::from(vec![coeff]),
-            (_, _) => {
-                if coeff == T::zero() {
-                    FPS::from(vec![T::zero()])
-                } else {
-                    let mut poly = Vec::with_capacity(power);
-                    for _ in 0..power {
-                        poly.push(T::zero());
-                    }
-                    poly.push(coeff);
-                    FPS::from(poly)
-                }
-            }
-        }
+        let mut poly = vec![T::zero(); power];
+        poly.push(coeff);
+        FPS(poly)
     }
 
     // 不定元 (indeterminate)
     #[inline]
     pub fn x() -> FPS<T> {
-        FPS::term(T::one(), 1)
+        FPS(vec![T::zero(), T::one()])
     }
 
     // 多項式の係数 (昇冪)
@@ -66,7 +54,7 @@ impl<T: CRing> FPS<T> {
     pub fn dubs(&self, x: T) -> T {
         let mut sum = T::zero();
         for (i, coeff) in self.0.iter().enumerate() {
-            sum += *coeff * x.scalar_pow(i);
+            sum += coeff.clone() * x.scalar_pow(i);
         }
         sum
     }
@@ -354,7 +342,6 @@ impl<T: CRing> From<Vec<T>> for FPS<T> {
 
 impl<T: CRing> Index<usize> for FPS<T> {
     type Output = T;
-
     #[inline]
     fn index(&self, index: usize) -> &Self::Output {
         &self.0[index]
@@ -363,7 +350,6 @@ impl<T: CRing> Index<usize> for FPS<T> {
 
 impl<T: CRing> Index<RangeToInclusive<usize>> for FPS<T> {
     type Output = [T];
-
     #[inline]
     fn index(&self, index: RangeToInclusive<usize>) -> &Self::Output {
         &self.0[index]

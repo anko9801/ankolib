@@ -1,12 +1,6 @@
 #![allow(non_snake_case)]
-pub mod finite_field;
-pub mod integer;
-pub mod integer_mod;
-pub mod matrix;
-pub mod minmax;
-pub mod polynomial;
+pub mod group;
 pub mod ring;
-pub mod tropical;
 
 use crate::util::trait_alias;
 use num::{One, Zero};

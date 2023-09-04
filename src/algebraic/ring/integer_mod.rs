@@ -1,15 +1,9 @@
+use super::integer::ZZ;
 use crate::algebraic::ring::{EuclidDomain, UFD};
 use crate::algebraic::{One, ScalarMul, ScalarPow, Zero};
 use num::Integer;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-
-use super::integer::ZZ;
-use super::polynomial::FPS;
-
-pub struct Ideal<T> {
-    element: T,
-}
 
 #[derive(Debug)]
 pub struct IntegerModRing {
@@ -51,9 +45,6 @@ impl IntegerModRing {
         let factors = self.order.clone().factors();
         factors.len() == 1 && factors[0].e == 1
     }
-    pub fn quotient(&self, ideal: Ideal<Self>) -> Self {
-        todo!();
-    }
     pub fn list_of_elements_of_multiplicative_group(&self) -> Vec<ZZ> {
         // TODO: 32, 64
         let mut multiplicative_group = Vec::new();
@@ -87,7 +78,7 @@ impl IntegerModRing {
         //     and Category of finite enumerated sets
     }
     // pub fn charpoly(self) -> FPS<ZZ> {
-    //     FPS::from(vec![-self, 1.into()])
+    //     FPS::from(vec![-self, ZZ::one()])
     // }
 }
 

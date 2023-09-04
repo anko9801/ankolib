@@ -3,7 +3,7 @@ mod geometry;
 mod graph;
 mod util;
 
-use crate::algebraic::{integer::ZZ, polynomial::FPS};
+use crate::algebraic::{ring::integer::ZZ, ring::polynomial::FPS};
 use num::Integer;
 
 fn main() {

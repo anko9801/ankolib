@@ -1,8 +1,6 @@
-use super::{
-    ring::{EuclidDomain, Factor, UFD},
-    ScalarMul, ScalarPow,
-};
-use num::{complex::Complex64, traits::NumAssign, BigInt, BigRational, Num, NumCast, PrimInt};
+use super::{EuclidDomain, Factor, UFD};
+use crate::algebraic::{ScalarMul, ScalarPow};
+use num::{complex::Complex64, traits::NumAssign, BigInt, BigRational, NumCast, PrimInt};
 use std::mem;
 
 pub type Int = BigInt;
